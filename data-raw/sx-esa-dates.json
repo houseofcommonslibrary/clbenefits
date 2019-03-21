@@ -1,0 +1,11 @@
+{
+  "database" : "str:database:ESA_Caseload_new",
+  "measures" : [ "str:count:ESA_Caseload_new:V_F_ESA_NEW" ],
+  "recodes" : {
+    "str:field:ESA_Caseload_new:F_ESA_QTR_NEW:DATE_NAME" : {
+      "map" : [ [ "str:value:ESA_Caseload_new:F_ESA_QTR_NEW:DATE_NAME:C_ESA_QTR_NEW:201805" ], [ "str:value:ESA_Caseload_new:F_ESA_QTR_NEW:DATE_NAME:C_ESA_QTR_NEW:201808" ] ],
+      "total" : false
+    }
+  },
+  "dimensions" : [ [ "str:field:ESA_Caseload_new:F_ESA_QTR_NEW:DATE_NAME" ] ]
+}

@@ -1,0 +1,6 @@
+^data-raw$
+^.*\.Rproj$
+^\.Rproj\.user$
+^readme.md
+^docs
+^pipeline

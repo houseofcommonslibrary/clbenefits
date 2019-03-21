@@ -1,0 +1,32 @@
+Package: clbenefits
+Type: Package
+Title: Download and Process a Range of Benefits Data
+Version: 0.1.0
+Author: Oliver Hawkins
+Maintainer: Oliver Hawkins <oli@olihawkins.com>
+Description: Download and process a range of benefits data.
+License: file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    dplyr,
+    httr,
+    jsonlite,
+    lubridate,
+    magrittr,
+    purrr,
+    readr,
+    readxl,
+    rjstat,
+    rlang,
+    rvest,
+    statxplorer,
+    stringr,
+    tibble,
+    tidyr,
+    xml2
+Suggests: 
+    testthat
+RoxygenNote: 6.1.1
+Remotes: olihawkins/statxplorer
+Depends: R (>= 2.10)
