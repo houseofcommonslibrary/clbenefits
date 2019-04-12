@@ -85,8 +85,40 @@ fetch_data <- function(verbose = TRUE) {
     filename <- file.path(HMRC_OUTPUT_DIR, "hmrc.csv")
     readr::write_csv(hmrc, filename)
 
-    list(
-        sx = sx,
-        nm = nm,
+    data <- list(
+        esa = sx$esa,
+        hb = sx$hb,
+        ucp = sx$ucp,
+        uch = sx$uch,
+        uch_child = sx$uch_child,
+        uch_housing = sx$uch_housing,
+        uch_capability = sx$uch_capability,
+        uch_total = sx$uch_total,
+        jsa = nm$jsa,
+        is = nm$is,
         hmrc = hmrc)
+
+    report("Writing all data as RDS")
+    saveRDS(data, file.path(OUTPUT_DIR, "data.rds"))
+
+    data
+}
+
+#' Interpolate data from all sources (if necessary)
+#'
+#' \code{interpolcate_data} takes the data returned from \code{fetch_data} and
+#' interpolates monthly data for those tables which require interpolation.
+#'
+#' @param data The list of tables returned from \code{fetch_data}.
+#' @return An equivalent set of results tables which each contain monthly data.
+#' @export
+
+interpolate_data <- function(data) {
+
+    data$esa <- interpolate_esa(data$esa)
+    data$jsa <- interpolate_jsa(data$jsa)
+    data$is <- interpolate_is(data$is)
+    data$hmrc <- interpolate_hmrc(data$hmrc)
+
+    data
 }

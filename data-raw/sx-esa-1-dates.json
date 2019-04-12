@@ -1,0 +1,5 @@
+{
+  "database" : "str:database:ESA_Caseload",
+  "measures" : [ "str:count:ESA_Caseload:V_F_ESA" ],
+  "dimensions" : [ [ "str:field:ESA_Caseload:F_ESA_QTR:DATE_NAME" ] ]
+}

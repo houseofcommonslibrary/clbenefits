@@ -1,0 +1,5 @@
+{
+  "database" : "str:database:hb_new",
+  "measures" : [ "str:count:hb_new:V_F_HB_NEW" ],
+  "dimensions" : [ [ "str:field:hb_new:F_HB_NEW_DATE:NEW_DATE_NAME" ] ]
+}

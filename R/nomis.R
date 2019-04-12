@@ -64,17 +64,21 @@ fetch_nm_is <- function() {
         by = "geography")
 
     data <- data %>%
+        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
         dplyr::select(
             .data$gid,
             .data$geography,
             .data$date,
-            .data$value)
+            .data$value) %>%
+        dplyr::arrange(
+            .data$gid,
+            .data$date)
 
     colnames(data) <- c(
         "gid",
         "geography",
         "date",
-        "claimants")
+        "is")
 
     data
 }
@@ -95,14 +99,27 @@ fetch_nm_jsa <- function() {
             .data$geography,
             .data$date,
             .data$item,
-            .data$value)
+            .data$value)%>%
+        dplyr::arrange(
+            .data$gid,
+            .data$item,
+            .data$date)
 
     colnames(data) <- c(
         "gid",
         "geography",
         "date",
-        "item",
-        "claimants")
+        "jsa_item",
+        "jsa")
+
+    # Replace NAs with zeros excpet where month is August 2016
+    exclude_months <- as.Date(c("2016-08-01"))
+
+    data$jsa <- purrr::map2_dbl(
+        data$date, data$jsa, function(d, c) {
+        if((! d %in% exclude_months) && (is.na(c))) return(0)
+        return(c)
+    })
 
     data
 }

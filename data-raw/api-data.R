@@ -4,11 +4,17 @@ read_file_trim <- function(filename) {
     stringr::str_trim(readr::read_file(filename))
 }
 
-SX_ESA_DATES_QUERY <- read_file_trim("sx-esa-dates.json")
-SX_ESA_QUERY <- read_file_trim("sx-esa.json")
+SX_ESA_1_DATES_QUERY <- read_file_trim("sx-esa-1-dates.json")
+SX_ESA_1_1_QUERY <- read_file_trim("sx-esa-1-1.json")
+SX_ESA_1_2_QUERY <- read_file_trim("sx-esa-1-2.json")
 
-SX_HB_DATES_QUERY <- read_file_trim("sx-hb-dates.json")
-SX_HB_QUERY <- read_file_trim("sx-hb.json")
+SX_ESA_2_DATES_QUERY <- read_file_trim("sx-esa-2-dates.json")
+SX_ESA_2_QUERY <- read_file_trim("sx-esa-2.json")
+
+SX_HB_1_DATES_QUERY <- read_file_trim("sx-hb-1-dates.json")
+
+SX_HB_2_DATES_QUERY <- read_file_trim("sx-hb-2-dates.json")
+SX_HB_2_QUERY <- read_file_trim("sx-hb-2.json")
 
 SX_UCP_DATES_QUERY <- read_file_trim("sx-ucp-dates.json")
 SX_UCP_QUERY <- read_file_trim("sx-ucp.json")
@@ -29,10 +35,14 @@ NM_GEOGRAPHY_LOOKUP <- readr::read_csv(
         gid = readr::col_character()))
 
 usethis::use_data(
-    SX_ESA_DATES_QUERY,
-    SX_ESA_QUERY,
-    SX_HB_DATES_QUERY,
-    SX_HB_QUERY,
+    SX_ESA_1_DATES_QUERY,
+    SX_ESA_1_1_QUERY,
+    SX_ESA_1_2_QUERY,
+    SX_ESA_2_DATES_QUERY,
+    SX_ESA_2_QUERY,
+    SX_HB_1_DATES_QUERY,
+    SX_HB_2_DATES_QUERY,
+    SX_HB_2_QUERY,
     SX_UCP_DATES_QUERY,
     SX_UCP_QUERY,
     SX_UCH_DATES_QUERY,

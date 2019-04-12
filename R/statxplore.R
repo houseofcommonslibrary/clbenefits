@@ -54,12 +54,20 @@ fetch_sx_dates <- function(query, date_func) {
         .data$value)
 }
 
-fetch_sx_dates_esa <- function() {
-    fetch_sx_dates(SX_ESA_DATES_QUERY, parse_sx_date_esa)
+fetch_sx_dates_esa_1 <- function() {
+    fetch_sx_dates(SX_ESA_1_DATES_QUERY, parse_sx_date_esa)
 }
 
-fetch_sx_dates_hb <- function() {
-    fetch_sx_dates(SX_HB_DATES_QUERY, parse_sx_date_hb)
+fetch_sx_dates_esa_2 <- function() {
+    fetch_sx_dates(SX_ESA_2_DATES_QUERY, parse_sx_date_esa)
+}
+
+fetch_sx_dates_hb_1 <- function() {
+    fetch_sx_dates(SX_HB_1_DATES_QUERY, parse_sx_date_hb)
+}
+
+fetch_sx_dates_hb_2 <- function() {
+    fetch_sx_dates(SX_HB_2_DATES_QUERY, parse_sx_date_hb)
 }
 
 fetch_sx_dates_ucp <- function() {
@@ -73,9 +81,53 @@ fetch_sx_dates_uch <- function() {
 
 # Fetch data for a given date for each dataset --------------------------------
 
-fetch_sx_esa_in <- function(date_id) {
+fetch_sx_esa_1_x_in <- function(query, date_id, geography_field) {
 
-    query <- stringr::str_replace(SX_ESA_QUERY, SX_DATE_ID_TOKEN, date_id)
+    query <- stringr::str_replace(query, SX_DATE_ID_TOKEN, date_id)
+
+    results <- query %>%
+        fetch_sx_table() %>%
+        statxplorer::add_codes_for_field(
+            field = geography_field,
+            colname = "pconid")
+
+    esa_1 <- results$dfs[[1]] %>%
+        dplyr::select(
+            .data$pconid,
+            .data[[geography_field]],
+            .data$Quarter,
+            dplyr::everything())
+
+    colnames(esa_1) <- c(
+        "gid",
+        "geography",
+        "date",
+        "esa_payment_type",
+        "esa")
+
+    esa_1$date <- parse_sx_date_esa(esa_1$date)
+    esa_1
+}
+
+fetch_sx_esa_1_in <- function(date_id) {
+
+    esa_1_1 <- fetch_sx_esa_1_x_in(
+        SX_ESA_1_1_QUERY,
+        date_id,
+        "Westminster Parliamentary Constituencies")
+
+    esa_1_2 <- fetch_sx_esa_1_x_in(
+        SX_ESA_1_2_QUERY,
+        date_id,
+        "National - Regional - LA - OAs")
+
+    dplyr::bind_rows(esa_1_1, esa_1_2)
+}
+
+
+fetch_sx_esa_2_in <- function(date_id) {
+
+    query <- stringr::str_replace(SX_ESA_2_QUERY, SX_DATE_ID_TOKEN, date_id)
 
     results <- query %>%
         fetch_sx_table() %>%
@@ -83,23 +135,23 @@ fetch_sx_esa_in <- function(date_id) {
             field = "Westminster Parliamentary Constituencies",
             colname = "pconid")
 
-    esa <- results$dfs[[1]] %>%
+    esa_2 <- results$dfs[[1]] %>%
         dplyr::select(.data$pconid, dplyr::everything())
 
-    colnames(esa) <- c(
+    colnames(esa_2) <- c(
         "gid",
         "geography",
         "date",
-        "payment_type",
-        "caseload")
+        "esa_payment_type",
+        "esa")
 
-    esa$date <- parse_sx_date_esa(esa$date)
-    esa
+    esa_2$date <- parse_sx_date_esa(esa_2$date)
+    esa_2
 }
 
-fetch_sx_hb_in <- function(date_id) {
+fetch_sx_hb_2_in <- function(date_id) {
 
-    query <- stringr::str_replace(SX_HB_QUERY, SX_DATE_ID_TOKEN, date_id)
+    query <- stringr::str_replace(SX_HB_2_QUERY, SX_DATE_ID_TOKEN, date_id)
     custom <- list("Age of Claimant (bands only)" = c("16-64"))
 
     results <- query %>%
@@ -115,9 +167,9 @@ fetch_sx_hb_in <- function(date_id) {
         "gid",
         "geography",
         "date",
-        "status",
-        "age",
-        "claimants")
+        "hb_status",
+        "hb_age",
+        "hb")
 
     hb$date <- parse_sx_date_hb(hb$date)
     hb
@@ -140,9 +192,9 @@ fetch_sx_ucp_in <- function(date_id) {
         "gid",
         "geography",
         "date",
-        "gender",
-        "conditionality",
-        "people")
+        "ucp_gender",
+        "ucp_conditionality",
+        "ucp")
 
     ucp$date <- parse_sx_date_uc(ucp$date)
     ucp
@@ -165,10 +217,10 @@ fetch_sx_uch_in <- function(date_id) {
         "gid",
         "geography",
         "date",
-        "ent_child",
-        "ent_housing",
-        "ent_capability",
-        "households")
+        "uch_child",
+        "uch_housing",
+        "uch_capability",
+        "uch")
 
     uch$date <- parse_sx_date_uc(uch$date)
     uch
@@ -183,18 +235,21 @@ fetch_sx_dataset <- function(date_func, dataset_func, verbose = TRUE) {
 
     purrr::map_dfr(dates$date_id, function(date_id) {
         if (verbose) {
-            report(stringr::str_glue("Fetching Stat-Xplore dataset: {fname} for {date_id}"))
+            report(stringr::str_glue(
+                "Fetching Stat-Xplore dataset: {fname} for {date_id}"))
         }
         dataset_func(date_id)
     })
 }
 
 fetch_sx_esa <- function() {
-    fetch_sx_dataset(fetch_sx_dates_esa, fetch_sx_esa_in)
+    esa_1 <- fetch_sx_dataset(fetch_sx_dates_esa_1, fetch_sx_esa_1_in)
+    esa_2 <- fetch_sx_dataset(fetch_sx_dates_esa_2, fetch_sx_esa_2_in)
+    dplyr::bind_rows(esa_1, esa_2)
 }
 
 fetch_sx_hb <- function() {
-    fetch_sx_dataset(fetch_sx_dates_hb, fetch_sx_hb_in)
+    fetch_sx_dataset(fetch_sx_dates_hb_2, fetch_sx_hb_2_in)
 }
 
 fetch_sx_ucp <- function() {
@@ -203,6 +258,26 @@ fetch_sx_ucp <- function() {
 
 fetch_sx_uch <- function() {
     fetch_sx_dataset(fetch_sx_dates_uch, fetch_sx_uch_in)
+}
+
+# Filter UC housing dataset ---------------------------------------------------
+
+filter_uch <- function(uch, label, child, housing, capability) {
+    uch %>%
+        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
+        dplyr::filter(
+            .data$uch_child == child,
+            .data$uch_housing == housing,
+            .data$uch_capability == capability) %>%
+        dplyr::select(
+            .data$gid,
+            .data$geography,
+            .data$date,
+            .data$uch) %>%
+        dplyr::rename(!!rlang::quo_name(label) := uch) %>%
+        dplyr::arrange(
+            .data$gid,
+            .data$date)
 }
 
 # Fetch all data for all datasets ---------------------------------------------
@@ -220,40 +295,63 @@ fetch_sx_uch <- function() {
 fetch_sx <- function(verbose = TRUE) {
 
     if (verbose) report("Fetching Stat-Xplore data on UC Households")
-    uch <- fetch_sx_uch()
+    uch <- fetch_sx_uch() %>%
+        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
+        dplyr::arrange(
+            .data$gid,
+            .data$uch_child,
+            .data$uch_housing,
+            .data$uch_capability,
+            .data$date)
 
-    uch_child <- uch %>%
-        dplyr::filter(
-            .data$ent_child == "Yes",
-            .data$ent_housing == "Total",
-            .data$ent_capability =="Total")
+    uch_child <- uch %>% filter_uch(
+        label = "uch_child",
+        child = "Yes",
+        housing = "Total",
+        capability = "Total")
 
-    uch_housing <- uch %>%
-        dplyr::filter(
-            .data$ent_child == "Total",
-            .data$ent_housing == "Yes",
-            .data$ent_capability =="Total")
+    uch_housing <- uch %>% filter_uch(
+        label = "uch_housing",
+        child = "Total",
+        housing = "Yes",
+        capability = "Total")
 
-    uch_capability <- uch %>%
-        dplyr::filter(
-            .data$ent_child == "Total",
-            .data$ent_housing == "Total",
-            .data$ent_capability =="Yes")
+    uch_capability <- uch %>% filter_uch(
+        label = "uch_capability",
+        child = "Total",
+        housing = "Total",
+        capability = "Yes")
 
-    uch_total <- uch %>%
-        dplyr::filter(
-            .data$ent_child == "Total",
-            .data$ent_housing == "Total",
-            .data$ent_capability =="Total")
+    uch_total <- uch %>% filter_uch(
+        label = "uch_total",
+        child = "Total",
+        housing = "Total",
+        capability = "Total")
 
     if (verbose) report("Fetching Stat-Xplore data on UC People")
-    ucp <- fetch_sx_ucp()
+    ucp <- fetch_sx_ucp() %>%
+        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
+        dplyr::arrange(
+            .data$gid,
+            .data$ucp_gender,
+            .data$ucp_conditionality,
+            .data$date)
 
     if (verbose) report("Fetching Stat-Xplore data on ESA")
-    esa <- fetch_sx_esa()
+    esa <- fetch_sx_esa() %>%
+        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
+        dplyr::arrange(
+            .data$gid,
+            .data$esa_payment_type,
+            .data$date)
 
     if (verbose) report("Fetching Stat-Xplore data on Housing Benefit")
-    hb <- fetch_sx_hb()
+    hb <- fetch_sx_hb() %>%
+        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
+        dplyr::arrange(
+            .data$gid,
+            .data$hb_status,
+            .data$date)
 
     list(
         esa = esa,

@@ -1,0 +1,19 @@
+{
+  "database" : "str:database:ESA_Caseload",
+  "measures" : [ "str:count:ESA_Caseload:V_F_ESA" ],
+  "recodes" : {
+    "str:field:ESA_Caseload:F_ESA_QTR:DATE_NAME" : {
+      "map" : [ [ "str:value:ESA_Caseload:F_ESA_QTR:DATE_NAME:C_ESA_QTR:<date_id>" ] ],
+      "total" : false
+    },
+    "str:field:ESA_Caseload:V_F_ESA:PAYMENT_TYPE" : {
+      "map" : [ [ "str:value:ESA_Caseload:V_F_ESA:PAYMENT_TYPE:C_ESA_PAYMENT_TYPE:3" ], [ "str:value:ESA_Caseload:V_F_ESA:PAYMENT_TYPE:C_ESA_PAYMENT_TYPE:2" ] ],
+      "total" : true
+    },
+    "str:field:ESA_Caseload:V_F_ESA:COA_CODE" : {
+      "map" : [ [ "str:value:ESA_Caseload:V_F_ESA:COA_CODE:V_C_GEOG00_GB:K03000001" ], [ "str:value:ESA_Caseload:V_F_ESA:COA_CODE:V_C_GEOG00_COUNTRY_to_GB:E92000001" ], [ "str:value:ESA_Caseload:V_F_ESA:COA_CODE:V_C_GEOG00_COUNTRY_to_GB:W92000004" ], [ "str:value:ESA_Caseload:V_F_ESA:COA_CODE:V_C_GEOG00_COUNTRY_to_GB:S92000003" ], [ "str:value:ESA_Caseload:V_F_ESA:COA_CODE:V_C_GEOG00_COUNTRY_to_GB:ZZXXXXXXX" ], [ "str:value:ESA_Caseload:V_F_ESA:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000001" ], [ "str:value:ESA_Caseload:V_F_ESA:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000002" ], [ "str:value:ESA_Caseload:V_F_ESA:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000003" ], [ "str:value:ESA_Caseload:V_F_ESA:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000004" ], [ "str:value:ESA_Caseload:V_F_ESA:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000005" ], [ "str:value:ESA_Caseload:V_F_ESA:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000006" ], [ "str:value:ESA_Caseload:V_F_ESA:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000007" ], [ "str:value:ESA_Caseload:V_F_ESA:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000008" ], [ "str:value:ESA_Caseload:V_F_ESA:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000009" ] ],
+      "total" : false
+    }
+  },
+  "dimensions" : [ [ "str:field:ESA_Caseload:V_F_ESA:COA_CODE" ], [ "str:field:ESA_Caseload:V_F_ESA:PAYMENT_TYPE" ], [ "str:field:ESA_Caseload:F_ESA_QTR:DATE_NAME" ] ]
+}

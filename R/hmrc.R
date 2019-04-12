@@ -84,16 +84,16 @@ import_hmrc_excel <- function(excelname, sheet, skip, cols, date) {
         "gid",
         "geog_1",
         "geog_2",
-        "wc_oow_f",
-        "wc_oow_c",
-        "wc_wtc_ctc_f",
-        "wc_wtc_ctc_c",
-        "wc_ctc_only_f",
-        "wc_ctc_only_c",
-        "wc_childcare_f",
-        "wc_wnc_f",
-        "tot_number",
-        "tot_range")
+        "hrmc_wc_oow_f",
+        "hrmc_wc_oow_c",
+        "hrmc_wc_wtc_ctc_f",
+        "hrmc_wc_wtc_ctc_c",
+        "hrmc_wc_ctc_only_f",
+        "hrmc_wc_ctc_only_c",
+        "hrmc_wc_childcare_f",
+        "hrmc_wc_wnc_f",
+        "hrmc_tot_number",
+        "hrmc_tot_range")
 
     # Combine the two geography columns
     df$geography <- ifelse(is.na(df$geog_2), df$geog_1, df$geog_2)
@@ -165,16 +165,16 @@ read_hmrc_csv <- function(csvname) {
             gid = readr::col_character(),
             geography = readr::col_character(),
             date = readr::col_date(),
-            wc_oow_f = readr::col_double(),
-            wc_oow_c = readr::col_double(),
-            wc_wtc_ctc_f = readr::col_double(),
-            wc_wtc_ctc_c = readr::col_double(),
-            wc_ctc_only_f = readr::col_double(),
-            wc_ctc_only_c = readr::col_double(),
-            wc_childcare_f = readr::col_double(),
-            wc_wnc_f = readr::col_double(),
-            tot_number = readr::col_double(),
-            tot_range = readr::col_double()))
+            hmrc_wc_oow_f = readr::col_double(),
+            hmrc_wc_oow_c = readr::col_double(),
+            hmrc_wc_wtc_ctc_f = readr::col_double(),
+            hmrc_wc_wtc_ctc_c = readr::col_double(),
+            hmrc_wc_ctc_only_f = readr::col_double(),
+            hmrc_wc_ctc_only_c = readr::col_double(),
+            hmrc_wc_childcare_f = readr::col_double(),
+            hmrc_wnc_tot = readr::col_double(),
+            hmrc_tot_number = readr::col_double(),
+            hmrc_tot_range = readr::col_double()))
 }
 
 # Read in all hmrc data -------------------------------------------------------
@@ -193,5 +193,8 @@ read_hmrc_csv <- function(csvname) {
 read_hmrc <- function(verbose = TRUE) {
 
     if (verbose) report("Reading HMRC data on Tax Credits")
-    purrr::map_dfr(list.files(HMRC_CSV_INPUT_DIR), ~ read_hmrc_csv(.))
+    hmrc <- purrr::map_dfr(list.files(HMRC_CSV_INPUT_DIR), ~ read_hmrc_csv(.))
+    hmrc %>%
+        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
+        dplyr::arrange(.data$gid, .data$date)
 }
