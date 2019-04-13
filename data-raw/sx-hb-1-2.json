@@ -1,0 +1,23 @@
+{
+  "database" : "str:database:hb_full",
+  "measures" : [ "str:count:hb_full:V_F_HB_FULL" ],
+  "recodes" : {
+    "str:field:hb_full:V_F_HB_FULL:EMP" : {
+      "map" : [ [ "str:value:hb_full:V_F_HB_FULL:EMP:C_EMPLOYMENT_STATUS:1" ], [ "str:value:hb_full:V_F_HB_FULL:EMP:C_EMPLOYMENT_STATUS:2" ], [ "str:value:hb_full:V_F_HB_FULL:EMP:C_EMPLOYMENT_STATUS:3" ], [ "str:value:hb_full:V_F_HB_FULL:EMP:C_EMPLOYMENT_STATUS:99" ] ],
+      "total" : true
+    },
+    "str:field:hb_full:V_F_DATE:DATE2" : {
+      "map" : [ [ "str:value:hb_full:V_F_DATE:DATE2:V_C_DATE:<date_id>" ] ],
+      "total" : false
+    },
+    "str:field:hb_full:V_F_HB_FULL:AGE_BAND" : {
+      "map" : [ [ "str:value:hb_full:V_F_HB_FULL:AGE_BAND:V_C_AGE_BAND_2:1", "str:value:hb_full:V_F_HB_FULL:AGE_BAND:V_C_AGE_BAND_2:2", "str:value:hb_full:V_F_HB_FULL:AGE_BAND:V_C_AGE_BAND_2:3", "str:value:hb_full:V_F_HB_FULL:AGE_BAND:V_C_AGE_BAND_2:4", "str:value:hb_full:V_F_HB_FULL:AGE_BAND:V_C_AGE_BAND_2:5", "str:value:hb_full:V_F_HB_FULL:AGE_BAND:V_C_AGE_BAND_2:6", "str:value:hb_full:V_F_HB_FULL:AGE_BAND:V_C_AGE_BAND_2:7" ] ],
+      "total" : false
+    },
+    "str:field:hb_full:V_F_HB_FULL:COA_CODE" : {
+      "map" : [ [ "str:value:hb_full:V_F_HB_FULL:COA_CODE:V_C_GEOG00_GB:K03000001" ], [ "str:value:hb_full:V_F_HB_FULL:COA_CODE:V_C_GEOG00_COUNTRY_to_GB:E92000001" ], [ "str:value:hb_full:V_F_HB_FULL:COA_CODE:V_C_GEOG00_COUNTRY_to_GB:W92000004" ], [ "str:value:hb_full:V_F_HB_FULL:COA_CODE:V_C_GEOG00_COUNTRY_to_GB:S92000003" ], [ "str:value:hb_full:V_F_HB_FULL:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000001" ], [ "str:value:hb_full:V_F_HB_FULL:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000002" ], [ "str:value:hb_full:V_F_HB_FULL:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000003" ], [ "str:value:hb_full:V_F_HB_FULL:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000004" ], [ "str:value:hb_full:V_F_HB_FULL:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000005" ], [ "str:value:hb_full:V_F_HB_FULL:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000006" ], [ "str:value:hb_full:V_F_HB_FULL:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000007" ], [ "str:value:hb_full:V_F_HB_FULL:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000008" ], [ "str:value:hb_full:V_F_HB_FULL:COA_CODE:V_C_GEOG05_REGION_to_COUNTRY:E12000009" ] ],
+      "total" : false
+    }
+  },
+  "dimensions" : [ [ "str:field:hb_full:V_F_HB_FULL:COA_CODE" ], [ "str:field:hb_full:V_F_HB_FULL:AGE_BAND" ], [ "str:field:hb_full:V_F_HB_FULL:EMP" ], [ "str:field:hb_full:V_F_DATE:DATE2" ] ]
+}

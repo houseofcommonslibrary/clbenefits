@@ -3,6 +3,7 @@
 # Constants -------------------------------------------------------------------
 
 SX_DATE_ID_TOKEN <- "<date_id>"
+SX_START_DATE <- as.Date("2015-08-01")
 
 # Generic function to fetch Stat-Xplore tables --------------------------------
 
@@ -48,10 +49,12 @@ fetch_sx_dates <- function(query, date_func) {
     colnames(dates) <- c("date", "value")
     dates$date <- date_func(dates$date)
     dates$date_id <- parse_sx_date_id(dates$date)
-    dates %>% dplyr::select(
-        .data$date_id,
-        .data$date,
-        .data$value)
+    dates %>%
+        dplyr::filter(date >= SX_START_DATE) %>%
+        dplyr::select(
+            .data$date_id,
+            .data$date,
+            .data$value)
 }
 
 fetch_sx_dates_esa_1 <- function() {
@@ -124,7 +127,6 @@ fetch_sx_esa_1_in <- function(date_id) {
     dplyr::bind_rows(esa_1_1, esa_1_2)
 }
 
-
 fetch_sx_esa_2_in <- function(date_id) {
 
     query <- stringr::str_replace(SX_ESA_2_QUERY, SX_DATE_ID_TOKEN, date_id)
@@ -149,6 +151,52 @@ fetch_sx_esa_2_in <- function(date_id) {
     esa_2
 }
 
+fetch_sx_hb_1_x_in <- function(query, date_id, geography_field) {
+
+    query <- stringr::str_replace(query, SX_DATE_ID_TOKEN, date_id)
+    custom <- list("Age of Claimant (bands only)" = c("16-64"))
+
+    results <- query %>%
+        fetch_sx_table(custom = custom) %>%
+        statxplorer::add_codes_for_field(
+            field = geography_field,
+            colname = "pconid")
+
+    hb_1 <- results$dfs[[1]] %>%
+        dplyr::select(
+            .data$pconid,
+            .data[[geography_field]],
+            .data$Month,
+            .data$`Employment Status`,
+            dplyr::everything())
+
+    colnames(hb_1) <- c(
+        "gid",
+        "geography",
+        "date",
+        "hb_status",
+        "hb_age",
+        "hb")
+
+    hb_1$date <- parse_sx_date_hb(hb_1$date)
+    hb_1
+}
+
+fetch_sx_hb_1_in <- function(date_id) {
+
+    hb_1_1 <- fetch_sx_hb_1_x_in(
+        SX_HB_1_1_QUERY,
+        date_id,
+        "Westminster Parliamentary Constituencies")
+
+    hb_1_2 <- fetch_sx_hb_1_x_in(
+        SX_HB_1_2_QUERY,
+        date_id,
+        "National - Regional - LA - OAs")
+
+    dplyr::bind_rows(hb_1_1, hb_1_2)
+}
+
 fetch_sx_hb_2_in <- function(date_id) {
 
     query <- stringr::str_replace(SX_HB_2_QUERY, SX_DATE_ID_TOKEN, date_id)
@@ -160,10 +208,10 @@ fetch_sx_hb_2_in <- function(date_id) {
             field = "Westminster Parliamentary Constituencies",
             colname = "pconid")
 
-    hb <- results$df[[1]] %>%
+    hb_2 <- results$df[[1]] %>%
         dplyr::select(.data$pconid, dplyr::everything())
 
-    colnames(hb) <- c(
+    colnames(hb_2) <- c(
         "gid",
         "geography",
         "date",
@@ -171,8 +219,8 @@ fetch_sx_hb_2_in <- function(date_id) {
         "hb_age",
         "hb")
 
-    hb$date <- parse_sx_date_hb(hb$date)
-    hb
+    hb_2$date <- parse_sx_date_hb(hb_2$date)
+    hb_2
 }
 
 fetch_sx_ucp_in <- function(date_id) {
@@ -249,7 +297,9 @@ fetch_sx_esa <- function() {
 }
 
 fetch_sx_hb <- function() {
-    fetch_sx_dataset(fetch_sx_dates_hb_2, fetch_sx_hb_2_in)
+    hb_1 <- fetch_sx_dataset(fetch_sx_dates_hb_1, fetch_sx_hb_1_in)
+    hb_2 <- fetch_sx_dataset(fetch_sx_dates_hb_2, fetch_sx_hb_2_in)
+    dplyr::bind_rows(hb_1, hb_2)
 }
 
 fetch_sx_ucp <- function() {

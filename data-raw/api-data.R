@@ -12,6 +12,8 @@ SX_ESA_2_DATES_QUERY <- read_file_trim("sx-esa-2-dates.json")
 SX_ESA_2_QUERY <- read_file_trim("sx-esa-2.json")
 
 SX_HB_1_DATES_QUERY <- read_file_trim("sx-hb-1-dates.json")
+SX_HB_1_1_QUERY <- read_file_trim("sx-hb-1-1.json")
+SX_HB_1_2_QUERY <- read_file_trim("sx-hb-1-2.json")
 
 SX_HB_2_DATES_QUERY <- read_file_trim("sx-hb-2-dates.json")
 SX_HB_2_QUERY <- read_file_trim("sx-hb-2.json")
@@ -41,6 +43,8 @@ usethis::use_data(
     SX_ESA_2_DATES_QUERY,
     SX_ESA_2_QUERY,
     SX_HB_1_DATES_QUERY,
+    SX_HB_1_1_QUERY,
+    SX_HB_1_2_QUERY,
     SX_HB_2_DATES_QUERY,
     SX_HB_2_QUERY,
     SX_UCP_DATES_QUERY,
