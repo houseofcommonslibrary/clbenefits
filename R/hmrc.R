@@ -195,6 +195,24 @@ read_hmrc <- function(verbose = TRUE) {
     if (verbose) report("Reading HMRC data on Tax Credits")
     hmrc <- purrr::map_dfr(list.files(HMRC_CSV_INPUT_DIR), ~ read_hmrc_csv(.))
     hmrc %>%
-        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
-        dplyr::arrange(.data$gid, .data$date)
+        dplyr::filter(! .data$gid %in% c(
+            "ZZXXXXXXX", "K02000001", "K04000001", "N92000002", "N06000001",
+            "N06000002", "N06000003", "N06000004", "N06000005", "N06000006",
+            "N06000007", "N06000008", "N06000009", "N06000010", "N06000011",
+            "N06000012", "N06000013", "N06000014", "N06000015", "N06000016",
+            "N06000017", "N06000018")) %>%
+        dplyr::arrange(.data$gid, .data$date) %>%
+        dplyr::mutate(
+            hmrc_wc_oow_f = hmrc_wc_oow_f * 1000,
+            hmrc_wc_oow_c = hmrc_wc_oow_c * 1000,
+            hmrc_wc_wtc_ctc_f = hmrc_wc_wtc_ctc_f * 1000,
+            hmrc_wc_wtc_ctc_c = hmrc_wc_wtc_ctc_c * 1000,
+            hmrc_wc_ctc_only_f = hmrc_wc_ctc_only_f * 1000,
+            hmrc_wc_ctc_only_c = hmrc_wc_ctc_only_c * 1000,
+            hmrc_wc_childcare_f = hmrc_wc_childcare_f * 1000,
+            hmrc_wnc_tot = hmrc_wnc_tot * 1000,
+            hmrc_tot_number = hmrc_tot_number * 1000,
+            hmrc_tot_range = hmrc_tot_range * 1000,
+            hmrc_in_work_tot = hmrc_tot_number - hmrc_wc_oow_f,
+            hmrc_wc_tot = hmrc_tot_number - hmrc_wnc_tot)
 }

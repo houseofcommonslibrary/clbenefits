@@ -3,18 +3,34 @@
 # Constants -------------------------------------------------------------------
 
 SX_DATE_ID_TOKEN <- "<date_id>"
-SX_START_DATE <- as.Date("2015-08-01")
+SX_START_DATE <- as.Date("2015-08-01", origin = lubridate::origin)
 
 # Generic function to fetch Stat-Xplore tables --------------------------------
 
-fetch_sx_table <- function(query, filename = NULL, custom = NULL) {
-    if(! statxplorer::has_api_key()) {
+fetch_sx_table <- function(query, filename = NULL, custom = NULL, retry = 10) {
+
+    # Check an api key exists
+    if (! statxplorer::has_api_key()) {
         stop(stringr::str_c(
             "No Stat-Xplore API key provided: use ",
             "clbenefits::set_sx_api_key() or clbenefits::load_sx_api_key() ",
             "to provide your key"))
     }
-    statxplorer::fetch_table(query, filename = filename, custom = custom)
+
+    # Define a function to handle an error and retry
+    handle_error <- function(condition) {
+        if (retry > 0) {
+            fetch_sx_table(query, filename, custom, retry - 1)
+        } else {
+            stop(condition$message)
+        }
+    }
+
+    # Try to fetch the table and call the error handler on failure
+    tryCatch({
+        statxplorer::fetch_table(query, filename = filename, custom = custom)
+    },
+    error = handle_error)
 }
 
 # Functions for parsing dates -------------------------------------------------
@@ -290,45 +306,26 @@ fetch_sx_dataset <- function(date_func, dataset_func, verbose = TRUE) {
     })
 }
 
-fetch_sx_esa <- function() {
-    esa_1 <- fetch_sx_dataset(fetch_sx_dates_esa_1, fetch_sx_esa_1_in)
-    esa_2 <- fetch_sx_dataset(fetch_sx_dates_esa_2, fetch_sx_esa_2_in)
+fetch_sx_esa <- function(verbose = TRUE) {
+    esa_1 <- fetch_sx_dataset(fetch_sx_dates_esa_1, fetch_sx_esa_1_in, verbose)
+    esa_2 <- fetch_sx_dataset(fetch_sx_dates_esa_2, fetch_sx_esa_2_in, verbose)
     dplyr::bind_rows(esa_1, esa_2)
 }
 
-fetch_sx_hb <- function() {
-    hb_1 <- fetch_sx_dataset(fetch_sx_dates_hb_1, fetch_sx_hb_1_in)
-    hb_2 <- fetch_sx_dataset(fetch_sx_dates_hb_2, fetch_sx_hb_2_in)
+fetch_sx_hb <- function(verbose = TRUE) {
+    hb_1 <- fetch_sx_dataset(fetch_sx_dates_hb_1, fetch_sx_hb_1_in, verbose)
+    hb_2 <- fetch_sx_dataset(fetch_sx_dates_hb_2, fetch_sx_hb_2_in, verbose)
     dplyr::bind_rows(hb_1, hb_2)
 }
 
-fetch_sx_ucp <- function() {
-    fetch_sx_dataset(fetch_sx_dates_ucp, fetch_sx_ucp_in)
+fetch_sx_ucp <- function(verbose = TRUE) {
+    fetch_sx_dataset(fetch_sx_dates_ucp, fetch_sx_ucp_in, verbose)
 }
 
-fetch_sx_uch <- function() {
-    fetch_sx_dataset(fetch_sx_dates_uch, fetch_sx_uch_in)
+fetch_sx_uch <- function(verbose = TRUE) {
+    fetch_sx_dataset(fetch_sx_dates_uch, fetch_sx_uch_in, verbose)
 }
 
-# Filter UC housing dataset ---------------------------------------------------
-
-filter_uch <- function(uch, label, child, housing, capability) {
-    uch %>%
-        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
-        dplyr::filter(
-            .data$uch_child == child,
-            .data$uch_housing == housing,
-            .data$uch_capability == capability) %>%
-        dplyr::select(
-            .data$gid,
-            .data$geography,
-            .data$date,
-            .data$uch) %>%
-        dplyr::rename(!!rlang::quo_name(label) := uch) %>%
-        dplyr::arrange(
-            .data$gid,
-            .data$date)
-}
 
 # Fetch all data for all datasets ---------------------------------------------
 
@@ -345,41 +342,20 @@ filter_uch <- function(uch, label, child, housing, capability) {
 fetch_sx <- function(verbose = TRUE) {
 
     if (verbose) report("Fetching Stat-Xplore data on UC Households")
-    uch <- fetch_sx_uch() %>%
-        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
-        dplyr::arrange(
-            .data$gid,
-            .data$uch_child,
-            .data$uch_housing,
-            .data$uch_capability,
-            .data$date)
 
-    uch_child <- uch %>% filter_uch(
-        label = "uch_child",
-        child = "Yes",
-        housing = "Total",
-        capability = "Total")
+    # uch <- fetch_sx_uch(verbose) %>%
+    #     dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
+    #     dplyr::arrange(
+    #         .data$gid,
+    #         .data$uch_child,
+    #         .data$uch_housing,
+    #         .data$uch_capability,
+    #         .data$date)
 
-    uch_housing <- uch %>% filter_uch(
-        label = "uch_housing",
-        child = "Total",
-        housing = "Yes",
-        capability = "Total")
-
-    uch_capability <- uch %>% filter_uch(
-        label = "uch_capability",
-        child = "Total",
-        housing = "Total",
-        capability = "Yes")
-
-    uch_total <- uch %>% filter_uch(
-        label = "uch_total",
-        child = "Total",
-        housing = "Total",
-        capability = "Total")
+    uch <- readr::read_csv(file.path(SX_ARCHIVE_DIR, "uch.csv"))
 
     if (verbose) report("Fetching Stat-Xplore data on UC People")
-    ucp <- fetch_sx_ucp() %>%
+    ucp <- fetch_sx_ucp(verbose) %>%
         dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
         dplyr::arrange(
             .data$gid,
@@ -388,7 +364,7 @@ fetch_sx <- function(verbose = TRUE) {
             .data$date)
 
     if (verbose) report("Fetching Stat-Xplore data on ESA")
-    esa <- fetch_sx_esa() %>%
+    esa <- fetch_sx_esa(verbose) %>%
         dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
         dplyr::arrange(
             .data$gid,
@@ -396,7 +372,7 @@ fetch_sx <- function(verbose = TRUE) {
             .data$date)
 
     if (verbose) report("Fetching Stat-Xplore data on Housing Benefit")
-    hb <- fetch_sx_hb() %>%
+    hb <- fetch_sx_hb(verbose) %>%
         dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
         dplyr::arrange(
             .data$gid,
@@ -407,11 +383,7 @@ fetch_sx <- function(verbose = TRUE) {
         esa = esa,
         hb = hb,
         ucp = ucp,
-        uch = uch,
-        uch_child = uch_child,
-        uch_housing = uch_housing,
-        uch_capability = uch_capability,
-        uch_total = uch_total)
+        uch = uch)
 }
 
 

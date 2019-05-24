@@ -57,7 +57,7 @@ interpolate_jsa <- function(jsa) {
 }
 
 interpolate_hmrc <- function(hmrc) {
-    valcols <- 4:13
+    valcols <- 4:15
     catcols <- c("gid", "date")
     months_df <- get_months_df(hmrc, catcols, hmrc$gid)
     interpolate_dataset(hmrc, months_df, catcols, valcols, "hmrc_int")

@@ -30,11 +30,17 @@ NM_IS_URL <- read_file_trim("nm-is.txt")
 NM_JSA_DATE_URL <- read_file_trim("nm-jsa-date.txt")
 NM_JSA_URL <- read_file_trim("nm-jsa.txt")
 
-NM_GEOGRAPHY_LOOKUP <- readr::read_csv(
-    "nm-geography-lookup.csv",
+GEOGRAPHY_GID_LOOKUP <- readr::read_csv(
+    "geography-gid-lookup.csv",
     col_types = readr::cols(
         geography = readr::col_character(),
         gid = readr::col_character()))
+
+GID_GEOGRAPHY_LOOKUP <- readr::read_csv(
+    "geography-gid-lookup.csv",
+    col_types = readr::cols(
+        gid = readr::col_character(),
+        geography = readr::col_character()))
 
 usethis::use_data(
     SX_ESA_1_DATES_QUERY,
@@ -55,6 +61,7 @@ usethis::use_data(
     NM_IS_URL,
     NM_JSA_DATE_URL,
     NM_JSA_URL,
-    NM_GEOGRAPHY_LOOKUP,
+    GID_GEOGRAPHY_LOOKUP,
+    GEOGRAPHY_GID_LOOKUP,
     internal = TRUE,
     overwrite = TRUE)
