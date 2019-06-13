@@ -24,7 +24,8 @@ Imports:
     stringr,
     tibble,
     tidyr,
-    xml2
+    xml2,
+    zoo
 Suggests: 
     testthat
 RoxygenNote: 6.1.1
