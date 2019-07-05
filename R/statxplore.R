@@ -343,16 +343,16 @@ fetch_sx <- function(verbose = TRUE) {
 
     if (verbose) report("Fetching Stat-Xplore data on UC Households")
 
-    # uch <- fetch_sx_uch(verbose) %>%
-    #     dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
-    #     dplyr::arrange(
-    #         .data$gid,
-    #         .data$uch_child,
-    #         .data$uch_housing,
-    #         .data$uch_capability,
-    #         .data$date)
+    uch <- fetch_sx_uch(verbose) %>%
+        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
+        dplyr::arrange(
+            .data$gid,
+            .data$uch_child,
+            .data$uch_housing,
+            .data$uch_capability,
+            .data$date)
 
-    uch <- readr::read_csv(file.path(SX_ARCHIVE_DIR, "uch.csv"))
+    # uch <- readr::read_csv(file.path(SX_ARCHIVE_DIR, "uch.csv"))
 
     if (verbose) report("Fetching Stat-Xplore data on UC People")
     ucp <- fetch_sx_ucp(verbose) %>%

@@ -26,6 +26,20 @@ HMRC_ARCHIVE_DIR <- file.path(ARCHIVE_DIR, "hmrc")
 
 MASTER_START_DATE <- as.Date("2015-08-01", origin = lubridate::origin)
 
+LEGACY_BENEFIT_TYPES <- c(
+    "hb_total" = "housing",
+    "hmrc_wc_total" = "children",
+    "esa" = "incapacity",
+    "jsa" = "unemployment",
+    "legacy_total" = "total")
+
+UC_BENEFIT_TYPES <- c(
+    "uch_housing" = "housing",
+    "uch_child" = "children",
+    "uch_capability" = "incapacity",
+    "ucp_search_work" = "unemployment",
+    "uch_total" = "total")
+
 # Config ----------------------------------------------------------------------
 
 #' Load the config file
@@ -306,6 +320,7 @@ create_master <- function(idata) {
         dplyr::left_join(., jsa, by = c("gid", "date")) %>%
         dplyr::left_join(., hmrc, by = c("gid", "date")) %>%
         dplyr::arrange(.data$gid, .data$date) %>%
+        # Add interpolation status 2 for row values that will be rolled forward
         tidyr::replace_na(list(
             uch_int = 2,
             ucp_int = 2,
@@ -314,8 +329,337 @@ create_master <- function(idata) {
             is_int = 2,
             jsa_int = 2,
             hmrc_int =2)) %>%
-        tidyr::fill(-dplyr::ends_with("_int"))
+        # Fill down the interpolated columns to roll forward last value
+        tidyr::fill(-dplyr::ends_with("_int")) %>%
+        # Add column for legacy benefits total
+        dplyr::mutate(
+            legacy_total = .data$hb_not_emp +
+                .data$esa +
+                .data$is +
+                .data$jsa +
+                .data$hmrc_in_work_total)
 }
+
+#' Convert the master table into a table for Power BI
+#'
+#' @master The master output table created in the pipeline.
+#' @return A table with the data structured for Power BI.
+#' @export
+
+create_powerbi <- function(master) {
+
+    con_legacy <- master %>%
+        dplyr::filter(.data$gid %in% CON_REGION_LOOKUP$gid) %>%
+        dplyr::left_join(CON_REGION_LOOKUP, by = "gid") %>%
+        dplyr::mutate(
+            country_id = "K03000001",
+            country_name = "Great Britain") %>%
+        dplyr::select(
+            .data$date,
+            constituency_id = .data$gid,
+            constituency_name = .data$geography,
+            .data$region_id,
+            .data$region_name,
+            .data$country_id,
+            .data$country_name,
+            .data$hb_total,
+            .data$hmrc_wc_total,
+            .data$esa,
+            .data$jsa,
+            .data$legacy_total) %>%
+        tidyr::gather(
+            key = "legacy_measure",
+            value = "legacy_value",
+            -c(.data$date,
+               .data$constituency_id,
+               .data$constituency_name,
+                .data$region_id,
+                .data$region_name,
+                .data$country_id,
+                .data$country_name)) %>%
+        dplyr::mutate(
+            benefit_type = unname(LEGACY_BENEFIT_TYPES[legacy_measure]))
+
+    con_uc <- master %>%
+        dplyr::filter(.data$gid %in% CON_REGION_LOOKUP$gid) %>%
+        dplyr::left_join(CON_REGION_LOOKUP, by = "gid") %>%
+        dplyr::mutate(
+            country_id = "K03000001",
+            country_name = "Great Britain") %>%
+        dplyr::select(
+            .data$date,
+            constituency_id = .data$gid,
+            constituency_name = .data$geography,
+            .data$region_id,
+            .data$region_name,
+            .data$country_id,
+            .data$country_name,
+            .data$uch_housing,
+            .data$uch_child,
+            .data$uch_capability,
+            .data$ucp_search_work,
+            .data$uch_total) %>%
+        tidyr::gather(
+            key = "uc_measure",
+            value = "uc_value",
+            -c(.data$date,
+               .data$constituency_id,
+               .data$constituency_name,
+                .data$region_id,
+                .data$region_name,
+                .data$country_id,
+                .data$country_name)) %>%
+        dplyr::mutate(
+            benefit_type = unname(UC_BENEFIT_TYPES[uc_measure]))
+
+    con <- dplyr::left_join(
+        con_legacy,
+        con_uc,
+        by = c(
+            "date",
+            "constituency_id",
+            "constituency_name",
+            "region_id",
+            "region_name",
+            "country_id",
+            "country_name",
+            "benefit_type")) %>%
+        dplyr::mutate(
+            pc_uc = ifelse(
+                .data$legacy_value == 0 & .data$uc_value == 0, 0,
+                .data$uc_value / (.data$legacy_value + .data$uc_value))) %>%
+        dplyr::group_by(date, region_id, benefit_type) %>%
+        dplyr::mutate(rank_region = rank(-.data$pc_uc, ties.method = "min")) %>%
+        dplyr::ungroup() %>%
+        dplyr::group_by(date, benefit_type) %>%
+        dplyr::mutate(rank_country = rank(-.data$pc_uc, ties.method = "min")) %>%
+        dplyr::ungroup()
+
+    con_child <-  dplyr::left_join(
+        con %>%
+            dplyr::filter(uc_measure == "uch_child") %>%
+            dplyr::select(
+                .data$date,
+                .data$constituency_id,
+                uch_child = .data$uc_value),
+        con %>%
+            dplyr::filter(uc_measure == "uch_total") %>%
+            dplyr::select(
+                .data$date,
+                .data$constituency_id,
+                uch_total = .data$uc_value),
+        by = c("date", "constituency_id")) %>%
+        dplyr::mutate(
+            pc_uc_child = ifelse(
+                .data$uch_child == 0, 0,
+                .data$uch_child / .data$uch_total))
+
+    con <- dplyr::left_join(
+        con,
+        con_child %>%
+            dplyr::select(
+                .data$date,
+                .data$constituency_id,
+                .data$pc_uc_child),
+        by = c("date", "constituency_id")) %>%
+        dplyr::select(
+            date,
+            constituency_id,
+            constituency_name,
+            region_id,
+            region_name,
+            country_id,
+            country_name,
+            benefit_type,
+            dplyr::everything()) %>%
+        dplyr::mutate(area_type = "constituency")
+
+    reg_legacy <- master %>%
+        dplyr::filter(
+            ! .data$gid %in% CON_REGION_LOOKUP$gid,
+            .data$gid != "K03000001") %>%
+        dplyr::select(
+            .data$date,
+            region_id = .data$gid,
+            region_name = .data$geography,
+            .data$hb_total,
+            .data$hmrc_wc_total,
+            .data$esa,
+            .data$jsa,
+            .data$legacy_total) %>%
+        tidyr::gather(
+            key = "legacy_measure",
+            value = "legacy_value",
+            -c(.data$date,
+               .data$region_id,
+               .data$region_name)) %>%
+        dplyr::mutate(
+            benefit_type = unname(LEGACY_BENEFIT_TYPES[legacy_measure]))
+
+    reg_uc <- master %>%
+        dplyr::filter(
+            ! .data$gid %in% CON_REGION_LOOKUP$gid,
+            .data$gid != "K03000001") %>%
+        dplyr::select(
+            .data$date,
+            region_id = .data$gid,
+            region_name = .data$geography,
+            .data$uch_housing,
+            .data$uch_child,
+            .data$uch_capability,
+            .data$ucp_search_work,
+            .data$uch_total) %>%
+        tidyr::gather(
+            key = "uc_measure",
+            value = "uc_value",
+            -c(.data$date,
+               .data$region_id,
+               .data$region_name)) %>%
+        dplyr::mutate(
+            benefit_type = unname(UC_BENEFIT_TYPES[uc_measure]))
+
+     reg <- dplyr::left_join(
+        reg_legacy,
+        reg_uc,
+        by = c(
+            "date",
+            "region_id",
+            "region_name",
+            "benefit_type")) %>%
+        dplyr::mutate(
+            pc_uc = ifelse(
+                .data$legacy_value == 0 & .data$uc_value == 0, 0,
+                .data$uc_value / (.data$legacy_value + .data$uc_value))) %>%
+         dplyr::select(
+            date,
+            region_id,
+            region_name,
+            benefit_type,
+            dplyr::everything())
+
+    gb_legacy <- master %>%
+        dplyr::filter(.data$gid == "K03000001") %>%
+        dplyr::select(
+            .data$date,
+            country_id = .data$gid,
+            country_name = .data$geography,
+            .data$hb_total,
+            .data$hmrc_wc_total,
+            .data$esa,
+            .data$jsa,
+            .data$legacy_total) %>%
+        tidyr::gather(
+            key = "legacy_measure",
+            value = "legacy_value",
+            -c(.data$date,
+               .data$country_id,
+               .data$country_name)) %>%
+        dplyr::mutate(
+            benefit_type = unname(LEGACY_BENEFIT_TYPES[legacy_measure]))
+
+    gb_uc <- master %>%
+        dplyr::filter(.data$gid == "K03000001") %>%
+        dplyr::select(
+            .data$date,
+            country_id = .data$gid,
+            country_name = .data$geography,
+            .data$uch_housing,
+            .data$uch_child,
+            .data$uch_capability,
+            .data$ucp_search_work,
+            .data$uch_total) %>%
+        tidyr::gather(
+            key = "uc_measure",
+            value = "uc_value",
+            -c(.data$date,
+               .data$country_id,
+               .data$country_name)) %>%
+        dplyr::mutate(
+            benefit_type = unname(UC_BENEFIT_TYPES[uc_measure]))
+
+    gb <- dplyr::left_join(
+        gb_legacy,
+        gb_uc,
+        by = c(
+            "date",
+            "country_id",
+            "country_name",
+            "benefit_type")) %>%
+        dplyr::mutate(
+            pc_uc = ifelse(
+                .data$legacy_value == 0 & .data$uc_value == 0, 0,
+                .data$uc_value / (.data$legacy_value + .data$uc_value))) %>%
+        dplyr::select(
+            .data$date,
+            .data$country_id,
+            .data$country_name,
+            .data$benefit_type,
+            dplyr::everything())
+
+     con_frame <- con %>%
+         dplyr::select(
+            .data$date,
+            .data$constituency_id,
+            .data$constituency_name,
+            .data$region_id,
+            .data$region_name,
+            .data$country_id,
+            .data$country_name,
+            .data$benefit_type)
+
+    con_reg <- dplyr::left_join(
+        con_frame,
+        reg,
+        by = c(
+            "date",
+            "region_id",
+            "region_name",
+            "benefit_type")) %>%
+        dplyr::mutate(
+            rank_region = -1,
+            rank_country = -1,
+            pc_uc_child = -1,
+            area_type = "region")
+
+    con_gb <- dplyr::left_join(
+        con_frame,
+        gb,
+        by = c(
+            "date",
+            "country_id",
+            "country_name",
+            "benefit_type")) %>%
+        dplyr::mutate(
+            rank_region = -1,
+            rank_country = -1,
+            pc_uc_child = -1,
+            area_type = "country")
+
+    # results <- list(
+    #     con = con,
+    #     con_reg = con_reg,
+    #     con_gb = con_gb,
+    #     con_child = con_child,
+    #     reg = reg,
+    #     gb = gb)
+
+    dplyr::bind_rows(con, con_reg, con_gb) %>%
+        dplyr::select(
+            .data$date,
+            .data$constituency_id,
+            .data$constituency_name,
+            .data$region_id,
+            .data$region_name,
+            .data$country_id,
+            .data$country_name,
+            .data$area_type,
+            dplyr::everything()) %>%
+        dplyr::arrange(
+            .data$constituency_id,
+            .data$date,
+            .data$benefit_type)
+}
+
 
 #' Run the pipeline
 #'
@@ -330,16 +674,24 @@ pipeline <- function() {
     fdata <- fetch_data()
     idata <- interpolate_data(fdata)
     master <- create_master(idata)
+    powerbi <- create_powerbi(master)
 
     data <- list(
         fdata = fdata,
         idata = idata,
-        master = master)
+        master = master,
+        powerbi = powerbi)
 
     report("Writing master benefits data file")
     filename <- file.path(OUTPUT_DIR, "master-benefits-data.csv")
     readr::write_csv(data$master, filename)
 
+    report("Writing Power BI data file")
+    filename <- file.path(OUTPUT_DIR, "universal-credit-power-bi.csv")
+    readr::write_csv(data$powerbi, filename)
+
     report("Writing all data as RDS")
     saveRDS(data, file.path(OUTPUT_DIR, "data.rds"))
+    data
 }
+

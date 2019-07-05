@@ -42,6 +42,13 @@ GID_GEOGRAPHY_LOOKUP <- readr::read_csv(
         gid = readr::col_character(),
         geography = readr::col_character()))
 
+CON_REGION_LOOKUP <- readr::read_csv(
+    "con-region-lookup.csv",
+    col_types = readr::cols(
+        gid = readr::col_character(),
+        region_id = readr::col_character(),
+        region_name = readr::col_character()))
+
 usethis::use_data(
     SX_ESA_1_DATES_QUERY,
     SX_ESA_1_1_QUERY,
@@ -63,5 +70,6 @@ usethis::use_data(
     NM_JSA_URL,
     GID_GEOGRAPHY_LOOKUP,
     GEOGRAPHY_GID_LOOKUP,
+    CON_REGION_LOOKUP,
     internal = TRUE,
     overwrite = TRUE)

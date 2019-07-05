@@ -92,8 +92,8 @@ import_hmrc_excel <- function(excelname, sheet, skip, cols, date) {
         "hrmc_wc_ctc_only_c",
         "hrmc_wc_childcare_f",
         "hrmc_wc_wnc_f",
-        "hrmc_tot_number",
-        "hrmc_tot_range")
+        "hrmc_total_number",
+        "hrmc_total_range")
 
     # Combine the two geography columns
     df$geography <- ifelse(is.na(df$geog_2), df$geog_1, df$geog_2)
@@ -172,9 +172,9 @@ read_hmrc_csv <- function(csvname) {
             hmrc_wc_ctc_only_f = readr::col_double(),
             hmrc_wc_ctc_only_c = readr::col_double(),
             hmrc_wc_childcare_f = readr::col_double(),
-            hmrc_wnc_tot = readr::col_double(),
-            hmrc_tot_number = readr::col_double(),
-            hmrc_tot_range = readr::col_double()))
+            hmrc_wnc_total = readr::col_double(),
+            hmrc_total_number = readr::col_double(),
+            hmrc_total_range = readr::col_double()))
 }
 
 # Read in all hmrc data -------------------------------------------------------
@@ -210,9 +210,9 @@ read_hmrc <- function(verbose = TRUE) {
             hmrc_wc_ctc_only_f = hmrc_wc_ctc_only_f * 1000,
             hmrc_wc_ctc_only_c = hmrc_wc_ctc_only_c * 1000,
             hmrc_wc_childcare_f = hmrc_wc_childcare_f * 1000,
-            hmrc_wnc_tot = hmrc_wnc_tot * 1000,
-            hmrc_tot_number = hmrc_tot_number * 1000,
-            hmrc_tot_range = hmrc_tot_range * 1000,
-            hmrc_in_work_tot = hmrc_tot_number - hmrc_wc_oow_f,
-            hmrc_wc_tot = hmrc_tot_number - hmrc_wnc_tot)
+            hmrc_wnc_total = hmrc_wnc_total * 1000,
+            hmrc_total_number = hmrc_total_number * 1000,
+            hmrc_total_range = hmrc_total_range * 1000,
+            hmrc_in_work_total = hmrc_total_number - hmrc_wc_oow_f,
+            hmrc_wc_total = hmrc_total_number - hmrc_wnc_total)
 }
