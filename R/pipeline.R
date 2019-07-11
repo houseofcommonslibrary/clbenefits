@@ -371,8 +371,8 @@ create_powerbi <- function(master) {
             key = "legacy_measure",
             value = "legacy_value",
             -c(.data$date,
-               .data$constituency_id,
-               .data$constituency_name,
+                .data$constituency_id,
+                .data$constituency_name,
                 .data$region_id,
                 .data$region_name,
                 .data$country_id,
@@ -394,6 +394,7 @@ create_powerbi <- function(master) {
             .data$region_name,
             .data$country_id,
             .data$country_name,
+            .data$uch_int,
             .data$uch_housing,
             .data$uch_child,
             .data$uch_capability,
@@ -403,12 +404,13 @@ create_powerbi <- function(master) {
             key = "uc_measure",
             value = "uc_value",
             -c(.data$date,
-               .data$constituency_id,
-               .data$constituency_name,
+                .data$constituency_id,
+                .data$constituency_name,
                 .data$region_id,
                 .data$region_name,
                 .data$country_id,
-                .data$country_name)) %>%
+                .data$country_name,
+                .data$uch_int)) %>%
         dplyr::mutate(
             benefit_type = unname(UC_BENEFIT_TYPES[uc_measure]))
 
@@ -504,6 +506,7 @@ create_powerbi <- function(master) {
             .data$date,
             region_id = .data$gid,
             region_name = .data$geography,
+            .data$uch_int,
             .data$uch_housing,
             .data$uch_child,
             .data$uch_capability,
@@ -514,7 +517,8 @@ create_powerbi <- function(master) {
             value = "uc_value",
             -c(.data$date,
                .data$region_id,
-               .data$region_name)) %>%
+               .data$region_name,
+               .data$uch_int)) %>%
         dplyr::mutate(
             benefit_type = unname(UC_BENEFIT_TYPES[uc_measure]))
 
@@ -563,6 +567,7 @@ create_powerbi <- function(master) {
             .data$date,
             country_id = .data$gid,
             country_name = .data$geography,
+            .data$uch_int,
             .data$uch_housing,
             .data$uch_child,
             .data$uch_capability,
@@ -573,7 +578,8 @@ create_powerbi <- function(master) {
             value = "uc_value",
             -c(.data$date,
                .data$country_id,
-               .data$country_name)) %>%
+               .data$country_name,
+               .data$uch_int)) %>%
         dplyr::mutate(
             benefit_type = unname(UC_BENEFIT_TYPES[uc_measure]))
 
@@ -653,6 +659,11 @@ create_powerbi <- function(master) {
             .data$country_id,
             .data$country_name,
             .data$area_type,
+            .data$benefit_type,
+            .data$legacy_measure,
+            .data$legacy_value,
+            .data$uc_measure,
+            .data$uc_value,
             dplyr::everything()) %>%
         dplyr::arrange(
             .data$constituency_id,
