@@ -57,6 +57,11 @@ parse_sx_date_uc <- function(months) {
     lubridate::dmy(months)
 }
 
+parse_sx_date_is <- function(quarters) {
+    quarters <- stringr::str_glue("1-{quarters}")
+    lubridate::dmy(quarters)
+}
+
 # Fetch dates for each dataset ------------------------------------------------
 
 fetch_sx_dates <- function(query, date_func) {
@@ -97,6 +102,9 @@ fetch_sx_dates_uch <- function() {
     fetch_sx_dates(SX_UCH_DATES_QUERY, parse_sx_date_uc)
 }
 
+fetch_sx_dates_is <- function() {
+    fetch_sx_dates(SX_IS_DATES_QUERY, parse_sx_date_is)
+}
 
 # Fetch data for a given date for each dataset --------------------------------
 
@@ -290,6 +298,29 @@ fetch_sx_uch_in <- function(date_id) {
     uch
 }
 
+fetch_sx_is_in <- function(date_id) {
+
+    query <- stringr::str_replace(SX_IS_QUERY, SX_DATE_ID_TOKEN, date_id)
+
+    results <- query %>%
+        fetch_sx_table()  %>%
+        statxplorer::add_codes_for_field(
+            field = "Westminster Parliamentary Constituencies",
+            colname = "pconid")
+
+    is <- results$df[[1]] %>%
+        dplyr::select(.data$pconid, dplyr::everything())
+
+    colnames(is) <- c(
+        "gid",
+        "geography",
+        "date",
+        "is")
+
+    is$date <- parse_sx_date_uc(is$date)
+    is
+}
+
 # Fetch data for all dates for each dataset -----------------------------------
 
 fetch_sx_dataset <- function(date_func, dataset_func, verbose = TRUE) {
@@ -324,6 +355,10 @@ fetch_sx_ucp <- function(verbose = TRUE) {
 
 fetch_sx_uch <- function(verbose = TRUE) {
     fetch_sx_dataset(fetch_sx_dates_uch, fetch_sx_uch_in, verbose)
+}
+
+fetch_sx_is <- function(verbose = TRUE) {
+    fetch_sx_dataset(fetch_sx_dates_is, fetch_sx_is_in, verbose)
 }
 
 
