@@ -85,8 +85,6 @@ report <- function(msg) cat(stringr::str_glue("{msg}\n\n"))
 
 fetch_data <- function(verbose = TRUE) {
 
-    load_config()
-
     sx <- fetch_sx(verbose)
     nm <- fetch_nm(verbose)
     hmrc <- read_hmrc(verbose)
@@ -108,12 +106,12 @@ fetch_data <- function(verbose = TRUE) {
     readr::write_csv(hmrc, filename)
 
     list(
-        esa = sx$esa,
-        hb = sx$hb,
-        ucp = sx$ucp,
         uch = sx$uch,
+        ucp = sx$ucp,
+        hb = sx$hb,
+        esa = sx$esa,
+        is = sx$is,
         jsa = nm$jsa,
-        is = nm$is,
         hmrc = hmrc)
 }
 
@@ -144,22 +142,22 @@ interpolate_data <- function(fdata) {
     esa <- interpolate_esa(fdata$esa) %>%
         dplyr::filter(.data$date >= MASTER_START_DATE)
 
-    jsa <- interpolate_jsa(fdata$jsa) %>%
+    is <- interpolate_is(fdata$is) %>%
         dplyr::filter(.data$date >= MASTER_START_DATE)
 
-    is <- interpolate_is(fdata$is) %>%
+    jsa <- interpolate_jsa(fdata$jsa) %>%
         dplyr::filter(.data$date >= MASTER_START_DATE)
 
     hmrc <- interpolate_hmrc(fdata$hmrc) %>%
         dplyr::filter(.data$date >= MASTER_START_DATE)
 
     list(
-        esa = esa,
-        hb = hb,
-        ucp = ucp,
         uch = uch,
-        jsa = jsa,
+        ucp = ucp,
+        hb = hb,
+        esa = esa,
         is = is,
+        jsa = jsa,
         hmrc = hmrc)
 }
 
@@ -681,6 +679,8 @@ create_powerbi <- function(master) {
 #' @export
 
 pipeline <- function() {
+
+    load_config()
 
     fdata <- fetch_data()
     idata <- interpolate_data(fdata)

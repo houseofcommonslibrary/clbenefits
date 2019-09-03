@@ -152,13 +152,11 @@ fetch_nm_jsa <- function() {
 
 fetch_nm <- function(verbose = TRUE) {
 
-    if (verbose) report("Fetching Nomis data on Income Support")
-    is <- fetch_nm_is()
+    # if (verbose) report("Fetching Nomis data on Income Support")
+    # is <- fetch_nm_is()
 
     if (verbose) report("Fetching Nomis data on JSA")
     jsa <- fetch_nm_jsa()
 
-    list(
-        is = is,
-        jsa = jsa)
+    list(jsa = jsa)
 }

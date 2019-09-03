@@ -41,9 +41,9 @@ parse_sx_date_id <- function(date_id) {
     as.character(stringr::str_glue("{year}{month}"))
 }
 
-parse_sx_date_esa <- function(quarters) {
-    quarters <- stringr::str_glue("1-{quarters}")
-    lubridate::dmy(quarters)
+parse_sx_date_uc <- function(months) {
+    months <- stringr::str_glue("1 {months}")
+    lubridate::dmy(months)
 }
 
 parse_sx_date_hb <- function(months) {
@@ -52,9 +52,9 @@ parse_sx_date_hb <- function(months) {
     lubridate::ymd(months)
 }
 
-parse_sx_date_uc <- function(months) {
-    months <- stringr::str_glue("1 {months}")
-    lubridate::dmy(months)
+parse_sx_date_esa <- function(quarters) {
+    quarters <- stringr::str_glue("1-{quarters}")
+    lubridate::dmy(quarters)
 }
 
 parse_sx_date_is <- function(quarters) {
@@ -78,12 +78,12 @@ fetch_sx_dates <- function(query, date_func) {
             .data$value)
 }
 
-fetch_sx_dates_esa_1 <- function() {
-    fetch_sx_dates(SX_ESA_1_DATES_QUERY, parse_sx_date_esa)
+fetch_sx_dates_uch <- function() {
+    fetch_sx_dates(SX_UCH_DATES_QUERY, parse_sx_date_uc)
 }
 
-fetch_sx_dates_esa_2 <- function() {
-    fetch_sx_dates(SX_ESA_2_DATES_QUERY, parse_sx_date_esa)
+fetch_sx_dates_ucp <- function() {
+    fetch_sx_dates(SX_UCP_DATES_QUERY, parse_sx_date_uc)
 }
 
 fetch_sx_dates_hb_1 <- function() {
@@ -94,12 +94,12 @@ fetch_sx_dates_hb_2 <- function() {
     fetch_sx_dates(SX_HB_2_DATES_QUERY, parse_sx_date_hb)
 }
 
-fetch_sx_dates_ucp <- function() {
-    fetch_sx_dates(SX_UCP_DATES_QUERY, parse_sx_date_uc)
+fetch_sx_dates_esa_1 <- function() {
+    fetch_sx_dates(SX_ESA_1_DATES_QUERY, parse_sx_date_esa)
 }
 
-fetch_sx_dates_uch <- function() {
-    fetch_sx_dates(SX_UCH_DATES_QUERY, parse_sx_date_uc)
+fetch_sx_dates_esa_2 <- function() {
+    fetch_sx_dates(SX_ESA_2_DATES_QUERY, parse_sx_date_esa)
 }
 
 fetch_sx_dates_is <- function() {
@@ -108,71 +108,55 @@ fetch_sx_dates_is <- function() {
 
 # Fetch data for a given date for each dataset --------------------------------
 
-fetch_sx_esa_1_x_in <- function(query, date_id, geography_field) {
+fetch_sx_uch_in <- function(date_id) {
 
-    query <- stringr::str_replace(query, SX_DATE_ID_TOKEN, date_id)
-
-    results <- query %>%
-        fetch_sx_table() %>%
-        statxplorer::add_codes_for_field(
-            field = geography_field,
-            colname = "pconid")
-
-    esa_1 <- results$dfs[[1]] %>%
-        dplyr::select(
-            .data$pconid,
-            .data[[geography_field]],
-            .data$Quarter,
-            dplyr::everything())
-
-    colnames(esa_1) <- c(
-        "gid",
-        "geography",
-        "date",
-        "esa_payment_type",
-        "esa")
-
-    esa_1$date <- parse_sx_date_esa(esa_1$date)
-    esa_1
-}
-
-fetch_sx_esa_1_in <- function(date_id) {
-
-    esa_1_1 <- fetch_sx_esa_1_x_in(
-        SX_ESA_1_1_QUERY,
-        date_id,
-        "Westminster Parliamentary Constituencies")
-
-    esa_1_2 <- fetch_sx_esa_1_x_in(
-        SX_ESA_1_2_QUERY,
-        date_id,
-        "National - Regional - LA - OAs")
-
-    dplyr::bind_rows(esa_1_1, esa_1_2)
-}
-
-fetch_sx_esa_2_in <- function(date_id) {
-
-    query <- stringr::str_replace(SX_ESA_2_QUERY, SX_DATE_ID_TOKEN, date_id)
+    query <- stringr::str_replace(SX_UCH_QUERY, SX_DATE_ID_TOKEN, date_id)
 
     results <- query %>%
-        fetch_sx_table() %>%
+        fetch_sx_table()  %>%
         statxplorer::add_codes_for_field(
             field = "Westminster Parliamentary Constituencies",
             colname = "pconid")
 
-    esa_2 <- results$dfs[[1]] %>%
+    uch <- results$df[[1]] %>%
         dplyr::select(.data$pconid, dplyr::everything())
 
-    colnames(esa_2) <- c(
+    colnames(uch) <- c(
         "gid",
         "geography",
         "date",
-        "esa_payment_type",
-        "esa")
+        "uch_child",
+        "uch_housing",
+        "uch_capability",
+        "uch")
 
-    esa_2$date <- parse_sx_date_esa(esa_2$date)
-    esa_2
+    uch$date <- parse_sx_date_uc(uch$date)
+    uch
+}
+
+fetch_sx_ucp_in <- function(date_id) {
+
+    query <- stringr::str_replace(SX_UCP_QUERY, SX_DATE_ID_TOKEN, date_id)
+
+    results <- query %>%
+        fetch_sx_table()  %>%
+        statxplorer::add_codes_for_field(
+            field = "Westminster Parliamentary Constituencies",
+            colname = "pconid")
+
+    ucp <- results$df[[1]] %>%
+        dplyr::select(.data$pconid, dplyr::everything())
+
+    colnames(ucp) <- c(
+        "gid",
+        "geography",
+        "date",
+        "ucp_gender",
+        "ucp_conditionality",
+        "ucp")
+
+    ucp$date <- parse_sx_date_uc(ucp$date)
+    ucp
 }
 
 fetch_sx_hb_1_x_in <- function(query, date_id, geography_field) {
@@ -247,55 +231,71 @@ fetch_sx_hb_2_in <- function(date_id) {
     hb_2
 }
 
-fetch_sx_ucp_in <- function(date_id) {
+fetch_sx_esa_1_x_in <- function(query, date_id, geography_field) {
 
-    query <- stringr::str_replace(SX_UCP_QUERY, SX_DATE_ID_TOKEN, date_id)
+    query <- stringr::str_replace(query, SX_DATE_ID_TOKEN, date_id)
 
     results <- query %>%
-        fetch_sx_table()  %>%
+        fetch_sx_table() %>%
         statxplorer::add_codes_for_field(
-            field = "Westminster Parliamentary Constituencies",
+            field = geography_field,
             colname = "pconid")
 
-    ucp <- results$df[[1]] %>%
-        dplyr::select(.data$pconid, dplyr::everything())
+    esa_1 <- results$dfs[[1]] %>%
+        dplyr::select(
+            .data$pconid,
+            .data[[geography_field]],
+            .data$Quarter,
+            dplyr::everything())
 
-    colnames(ucp) <- c(
+    colnames(esa_1) <- c(
         "gid",
         "geography",
         "date",
-        "ucp_gender",
-        "ucp_conditionality",
-        "ucp")
+        "esa_payment_type",
+        "esa")
 
-    ucp$date <- parse_sx_date_uc(ucp$date)
-    ucp
+    esa_1$date <- parse_sx_date_esa(esa_1$date)
+    esa_1
 }
 
-fetch_sx_uch_in <- function(date_id) {
+fetch_sx_esa_1_in <- function(date_id) {
 
-    query <- stringr::str_replace(SX_UCH_QUERY, SX_DATE_ID_TOKEN, date_id)
+    esa_1_1 <- fetch_sx_esa_1_x_in(
+        SX_ESA_1_1_QUERY,
+        date_id,
+        "Westminster Parliamentary Constituencies")
+
+    esa_1_2 <- fetch_sx_esa_1_x_in(
+        SX_ESA_1_2_QUERY,
+        date_id,
+        "National - Regional - LA - OAs")
+
+    dplyr::bind_rows(esa_1_1, esa_1_2)
+}
+
+fetch_sx_esa_2_in <- function(date_id) {
+
+    query <- stringr::str_replace(SX_ESA_2_QUERY, SX_DATE_ID_TOKEN, date_id)
 
     results <- query %>%
-        fetch_sx_table()  %>%
+        fetch_sx_table() %>%
         statxplorer::add_codes_for_field(
             field = "Westminster Parliamentary Constituencies",
             colname = "pconid")
 
-    uch <- results$df[[1]] %>%
+    esa_2 <- results$dfs[[1]] %>%
         dplyr::select(.data$pconid, dplyr::everything())
 
-    colnames(uch) <- c(
+    colnames(esa_2) <- c(
         "gid",
         "geography",
         "date",
-        "uch_child",
-        "uch_housing",
-        "uch_capability",
-        "uch")
+        "esa_payment_type",
+        "esa")
 
-    uch$date <- parse_sx_date_uc(uch$date)
-    uch
+    esa_2$date <- parse_sx_date_esa(esa_2$date)
+    esa_2
 }
 
 fetch_sx_is_in <- function(date_id) {
@@ -337,10 +337,12 @@ fetch_sx_dataset <- function(date_func, dataset_func, verbose = TRUE) {
     })
 }
 
-fetch_sx_esa <- function(verbose = TRUE) {
-    esa_1 <- fetch_sx_dataset(fetch_sx_dates_esa_1, fetch_sx_esa_1_in, verbose)
-    esa_2 <- fetch_sx_dataset(fetch_sx_dates_esa_2, fetch_sx_esa_2_in, verbose)
-    dplyr::bind_rows(esa_1, esa_2)
+fetch_sx_uch <- function(verbose = TRUE) {
+    fetch_sx_dataset(fetch_sx_dates_uch, fetch_sx_uch_in, verbose)
+}
+
+fetch_sx_ucp <- function(verbose = TRUE) {
+    fetch_sx_dataset(fetch_sx_dates_ucp, fetch_sx_ucp_in, verbose)
 }
 
 fetch_sx_hb <- function(verbose = TRUE) {
@@ -349,12 +351,10 @@ fetch_sx_hb <- function(verbose = TRUE) {
     dplyr::bind_rows(hb_1, hb_2)
 }
 
-fetch_sx_ucp <- function(verbose = TRUE) {
-    fetch_sx_dataset(fetch_sx_dates_ucp, fetch_sx_ucp_in, verbose)
-}
-
-fetch_sx_uch <- function(verbose = TRUE) {
-    fetch_sx_dataset(fetch_sx_dates_uch, fetch_sx_uch_in, verbose)
+fetch_sx_esa <- function(verbose = TRUE) {
+    esa_1 <- fetch_sx_dataset(fetch_sx_dates_esa_1, fetch_sx_esa_1_in, verbose)
+    esa_2 <- fetch_sx_dataset(fetch_sx_dates_esa_2, fetch_sx_esa_2_in, verbose)
+    dplyr::bind_rows(esa_1, esa_2)
 }
 
 fetch_sx_is <- function(verbose = TRUE) {
@@ -398,14 +398,6 @@ fetch_sx <- function(verbose = TRUE) {
             .data$ucp_conditionality,
             .data$date)
 
-    if (verbose) report("Fetching Stat-Xplore data on ESA")
-    esa <- fetch_sx_esa(verbose) %>%
-        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
-        dplyr::arrange(
-            .data$gid,
-            .data$esa_payment_type,
-            .data$date)
-
     if (verbose) report("Fetching Stat-Xplore data on Housing Benefit")
     hb <- fetch_sx_hb(verbose) %>%
         dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
@@ -414,11 +406,27 @@ fetch_sx <- function(verbose = TRUE) {
             .data$hb_status,
             .data$date)
 
+    if (verbose) report("Fetching Stat-Xplore data on ESA")
+    esa <- fetch_sx_esa(verbose) %>%
+        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
+        dplyr::arrange(
+            .data$gid,
+            .data$esa_payment_type,
+            .data$date)
+
+    if (verbose) report("Fetching Stat-Xplore data on Incapacity Benefit")
+    is <- fetch_sx_is(verbose) %>%
+        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
+        dplyr::arrange(
+            .data$gid,
+            .data$date)
+
     list(
-        esa = esa,
-        hb = hb,
+        uch = uch,
         ucp = ucp,
-        uch = uch)
+        hb = hb,
+        esa = esa,
+        is = is)
 }
 
 
