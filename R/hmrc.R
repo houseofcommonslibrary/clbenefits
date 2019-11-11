@@ -203,16 +203,16 @@ read_hmrc <- function(verbose = TRUE) {
             "N06000017", "N06000018")) %>%
         dplyr::arrange(.data$gid, .data$date) %>%
         dplyr::mutate(
-            hmrc_wc_oow_f = hmrc_wc_oow_f * 1000,
-            hmrc_wc_oow_c = hmrc_wc_oow_c * 1000,
-            hmrc_wc_wtc_ctc_f = hmrc_wc_wtc_ctc_f * 1000,
-            hmrc_wc_wtc_ctc_c = hmrc_wc_wtc_ctc_c * 1000,
-            hmrc_wc_ctc_only_f = hmrc_wc_ctc_only_f * 1000,
-            hmrc_wc_ctc_only_c = hmrc_wc_ctc_only_c * 1000,
-            hmrc_wc_childcare_f = hmrc_wc_childcare_f * 1000,
-            hmrc_wnc_total = hmrc_wnc_total * 1000,
-            hmrc_total_number = hmrc_total_number * 1000,
-            hmrc_total_range = hmrc_total_range * 1000,
-            hmrc_in_work_total = hmrc_total_number - hmrc_wc_oow_f,
-            hmrc_wc_total = hmrc_total_number - hmrc_wnc_total)
+            hmrc_wc_oow_f = .data$hmrc_wc_oow_f * 1000,
+            hmrc_wc_oow_c = .data$hmrc_wc_oow_c * 1000,
+            hmrc_wc_wtc_ctc_f = .data$hmrc_wc_wtc_ctc_f * 1000,
+            hmrc_wc_wtc_ctc_c = .data$hmrc_wc_wtc_ctc_c * 1000,
+            hmrc_wc_ctc_only_f = .data$hmrc_wc_ctc_only_f * 1000,
+            hmrc_wc_ctc_only_c = .data$hmrc_wc_ctc_only_c * 1000,
+            hmrc_wc_childcare_f = .data$hmrc_wc_childcare_f * 1000,
+            hmrc_wnc_total = .data$hmrc_wnc_total * 1000,
+            hmrc_total_number = .data$hmrc_total_number * 1000,
+            hmrc_total_range = .data$hmrc_total_range * 1000,
+            hmrc_in_work_total = .data$hmrc_total_number - .data$hmrc_wc_oow_f,
+            hmrc_wc_total = .data$hmrc_total_number - .data$hmrc_wnc_total)
 }

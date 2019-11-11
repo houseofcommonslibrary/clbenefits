@@ -277,7 +277,7 @@ create_master <- function(idata) {
             .data$jsa,
             .data$jsa_int)
 
-    hmrc <- idata$hmrc %>% dplyr::select(-geography)
+    hmrc <- idata$hmrc %>% dplyr::select(-.data$geography)
 
     mdata <- list(
         uch_child = uch_child,
@@ -340,7 +340,7 @@ create_master <- function(idata) {
 
 #' Convert the master table into a table for Power BI
 #'
-#' @master The master output table created in the pipeline.
+#' @param master output table created in the pipeline.
 #' @return A table with the data structured for Power BI.
 #' @export
 
@@ -376,7 +376,7 @@ create_powerbi <- function(master) {
                 .data$country_id,
                 .data$country_name)) %>%
         dplyr::mutate(
-            benefit_type = unname(LEGACY_BENEFIT_TYPES[legacy_measure]))
+            benefit_type = unname(LEGACY_BENEFIT_TYPES[.data$legacy_measure]))
 
     con_uc <- master %>%
         dplyr::filter(.data$gid %in% CON_REGION_LOOKUP$gid) %>%
@@ -410,7 +410,7 @@ create_powerbi <- function(master) {
                 .data$country_name,
                 .data$uch_int)) %>%
         dplyr::mutate(
-            benefit_type = unname(UC_BENEFIT_TYPES[uc_measure]))
+            benefit_type = unname(UC_BENEFIT_TYPES[.data$uc_measure]))
 
     con <- dplyr::left_join(
         con_legacy,
@@ -428,22 +428,22 @@ create_powerbi <- function(master) {
             pc_uc = ifelse(
                 .data$legacy_value == 0 & .data$uc_value == 0, 0,
                 .data$uc_value / (.data$legacy_value + .data$uc_value))) %>%
-        dplyr::group_by(date, region_id, benefit_type) %>%
+        dplyr::group_by(date, .data$region_id, .data$benefit_type) %>%
         dplyr::mutate(rank_region = rank(-.data$pc_uc, ties.method = "min")) %>%
         dplyr::ungroup() %>%
-        dplyr::group_by(date, benefit_type) %>%
+        dplyr::group_by(.data$date, .data$benefit_type) %>%
         dplyr::mutate(rank_country = rank(-.data$pc_uc, ties.method = "min")) %>%
         dplyr::ungroup()
 
     con_child <-  dplyr::left_join(
         con %>%
-            dplyr::filter(uc_measure == "uch_child") %>%
+            dplyr::filter(.data$uc_measure == "uch_child") %>%
             dplyr::select(
                 .data$date,
                 .data$constituency_id,
                 uch_child = .data$uc_value),
         con %>%
-            dplyr::filter(uc_measure == "uch_total") %>%
+            dplyr::filter(.data$uc_measure == "uch_total") %>%
             dplyr::select(
                 .data$date,
                 .data$constituency_id,
@@ -463,14 +463,14 @@ create_powerbi <- function(master) {
                 .data$pc_uc_child),
         by = c("date", "constituency_id")) %>%
         dplyr::select(
-            date,
-            constituency_id,
-            constituency_name,
-            region_id,
-            region_name,
-            country_id,
-            country_name,
-            benefit_type,
+            .data$date,
+            .data$constituency_id,
+            .data$constituency_name,
+            .data$region_id,
+            .data$region_name,
+            .data$country_id,
+            .data$country_name,
+            .data$benefit_type,
             dplyr::everything()) %>%
         dplyr::mutate(area_type = "constituency")
 
@@ -494,7 +494,7 @@ create_powerbi <- function(master) {
                .data$region_id,
                .data$region_name)) %>%
         dplyr::mutate(
-            benefit_type = unname(LEGACY_BENEFIT_TYPES[legacy_measure]))
+            benefit_type = unname(LEGACY_BENEFIT_TYPES[.data$legacy_measure]))
 
     reg_uc <- master %>%
         dplyr::filter(
@@ -518,7 +518,7 @@ create_powerbi <- function(master) {
                .data$region_name,
                .data$uch_int)) %>%
         dplyr::mutate(
-            benefit_type = unname(UC_BENEFIT_TYPES[uc_measure]))
+            benefit_type = unname(UC_BENEFIT_TYPES[.data$uc_measure]))
 
      reg <- dplyr::left_join(
         reg_legacy,
@@ -533,10 +533,10 @@ create_powerbi <- function(master) {
                 .data$legacy_value == 0 & .data$uc_value == 0, 0,
                 .data$uc_value / (.data$legacy_value + .data$uc_value))) %>%
          dplyr::select(
-            date,
-            region_id,
-            region_name,
-            benefit_type,
+            .data$date,
+            .data$region_id,
+            .data$region_name,
+            .data$benefit_type,
             dplyr::everything())
 
     gb_legacy <- master %>%
@@ -557,7 +557,7 @@ create_powerbi <- function(master) {
                .data$country_id,
                .data$country_name)) %>%
         dplyr::mutate(
-            benefit_type = unname(LEGACY_BENEFIT_TYPES[legacy_measure]))
+            benefit_type = unname(LEGACY_BENEFIT_TYPES[.data$legacy_measure]))
 
     gb_uc <- master %>%
         dplyr::filter(.data$gid == "K03000001") %>%
@@ -579,7 +579,7 @@ create_powerbi <- function(master) {
                .data$country_name,
                .data$uch_int)) %>%
         dplyr::mutate(
-            benefit_type = unname(UC_BENEFIT_TYPES[uc_measure]))
+            benefit_type = unname(UC_BENEFIT_TYPES[.data$uc_measure]))
 
     gb <- dplyr::left_join(
         gb_legacy,
@@ -694,7 +694,7 @@ pipeline <- function() {
         powerbi = powerbi)
 
     report("Writing master benefits data file")
-    filename <- file.path(OUTPUT_DIR, "master-benefits-data.csv")
+    filename <- file.path(OUTPUT_DIR, "universal-credit-master-data.csv")
     readr::write_csv(data$master, filename)
 
     report("Writing Power BI data file")

@@ -2,6 +2,7 @@
 
 export(convert_hmrc_excel)
 export(create_master)
+export(create_powerbi)
 export(fetch_data)
 export(fetch_hmrc_excel)
 export(fetch_nm)
