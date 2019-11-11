@@ -639,15 +639,8 @@ create_powerbi <- function(master) {
             pc_uc_child = -1,
             area_type = "country")
 
-    # results <- list(
-    #     con = con,
-    #     con_reg = con_reg,
-    #     con_gb = con_gb,
-    #     con_child = con_child,
-    #     reg = reg,
-    #     gb = gb)
-
     dplyr::bind_rows(con, con_reg, con_gb) %>%
+        add_powerbi_labels() %>%
         dplyr::select(
             .data$date,
             .data$constituency_id,
@@ -657,7 +650,9 @@ create_powerbi <- function(master) {
             .data$country_id,
             .data$country_name,
             .data$area_type,
+            .data$area_name,
             .data$benefit_type,
+            .data$benefit_name,
             .data$legacy_measure,
             .data$legacy_value,
             .data$uc_measure,
@@ -669,6 +664,102 @@ create_powerbi <- function(master) {
             .data$benefit_type)
 }
 
+
+#' Add additional columns of labels to the Power BI table
+#'
+#' @param powerbi The table of core data structured for Power BI.
+#' @return A table structured for Power BI with additional label columns.
+#' @keywords internal
+
+add_powerbi_labels <- function(powerbi) {
+
+
+    # Add area name labels based on area type
+    area_cols = list(
+        powerbi$constituency_name,
+        powerbi$region_name,
+        powerbi$country_name,
+        powerbi$area_type)
+
+    powerbi$area_name <- purrr::pmap_chr(
+        area_cols,
+        function(constituency_name, region_name, country_name, area_type) {
+
+            area_type_lookup <- list(
+                "constituency" = constituency_name,
+                "region" = region_name,
+                "country" = country_name)
+
+            area_type_lookup[[area_type]]
+    })
+
+
+    # Add benefit labels based on benefit_type
+    benefit_type_lookup <- list(
+        "children" = "Children (no. of households)",
+        "housing" = "Housing costs (no. of households)",
+        "incapacity" = "Incapacity (no. of households)",
+        "unemployment" = "Jobseekers (no. of individuals)",
+        "total" = "Total: all households")
+
+    powerbi$benefit_name <- purrr::map_chr(
+        powerbi$benefit_type,
+        function(benefit_type) {
+            benefit_type_lookup[[benefit_type]]
+    })
+
+    # Add row number indicators based on benefit type and area type
+    row_number_lookup <- list(
+    "children" = list(
+        "constituency" = 7,
+        "region" = 8,
+        "country" = 9),
+    "housing" = list(
+        "constituency" = 4,
+        "region" = 5,
+        "country" = 6),
+    "incapacity" = list(
+        "constituency" = 10,
+        "region" = 11,
+        "country" = 12),
+    "unemployment" = list(
+        "constituency" = 13,
+        "region" = 14,
+        "country" = 15),
+    "total" = list(
+        "constituency" = 1,
+        "region" = 2,
+        "country" = 3))
+
+
+    powerbi$row_number <- as.integer(purrr::pmap_chr(
+        list(powerbi$benefit_type, powerbi$area_type),
+        function(benefit_type, area_type) {
+            row_number_lookup[[benefit_type]][[area_type]]
+    }))
+
+    # Add constituency count based on region
+    const_count_lookup <- list(
+        "E12000001" = 29,
+        "E12000002" = 75,
+        "E12000003" = 54,
+        "E12000004" = 46,
+        "E12000005" = 59,
+        "E12000006" = 58,
+        "E12000007" = 73,
+        "E12000008" = 84,
+        "E12000009" = 55,
+        "S92000003" = 59,
+        "W92000004" = 40)
+
+    powerbi$region_const_count <- as.integer(purrr::map_chr(
+        powerbi$region_id,
+        function(region_id) {
+            const_count_lookup[[region_id]]
+    }))
+
+    powerbi
+}
 
 #' Run the pipeline
 #'
