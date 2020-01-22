@@ -50,9 +50,9 @@ interpolate_is <- function(is) {
 }
 
 interpolate_jsa <- function(jsa) {
-    valcols <- 5
-    catcols <- c("gid", "jsa_item", "date")
-    months_df <- get_months_df(jsa, catcols, jsa$gid, jsa$jsa_item)
+    valcols <- 4
+    catcols <- c("gid", "date")
+    months_df <- get_months_df(jsa, catcols, jsa$gid)
     interpolate_dataset(jsa, months_df, catcols, valcols, "jsa_int")
 }
 

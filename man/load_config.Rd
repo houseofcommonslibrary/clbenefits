@@ -7,7 +7,5 @@
 load_config()
 }
 \description{
-\code{load_config} loads the config file from the pipeline directory. The
-config file is a json file specifying the api keys for Stat-Xplore and
-Nomis.
+\code{load_config} loads the config file from the pipeline directory.
 }

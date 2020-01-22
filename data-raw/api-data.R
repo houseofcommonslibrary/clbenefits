@@ -27,11 +27,8 @@ SX_UCH_QUERY <- read_file_trim("sx-uch.json")
 SX_IS_DATES_QUERY <- read_file_trim("sx-is-dates.json")
 SX_IS_QUERY <- read_file_trim("sx-is.json")
 
-NM_IS_DATE_URL <- read_file_trim("nm-is-date.txt")
-NM_IS_URL <- read_file_trim("nm-is.txt")
-
-NM_JSA_DATE_URL <- read_file_trim("nm-jsa-date.txt")
-NM_JSA_URL <- read_file_trim("nm-jsa.txt")
+SX_JSA_DATES_QUERY <- read_file_trim("sx-jsa-dates.json")
+SX_JSA_QUERY <- read_file_trim("sx-jsa.json")
 
 GEOGRAPHY_GID_LOOKUP <- readr::read_csv(
     "geography-gid-lookup.csv",
@@ -69,10 +66,8 @@ usethis::use_data(
     SX_UCH_QUERY,
     SX_IS_DATES_QUERY,
     SX_IS_QUERY,
-    NM_IS_DATE_URL,
-    NM_IS_URL,
-    NM_JSA_DATE_URL,
-    NM_JSA_URL,
+    SX_JSA_DATES_QUERY,
+    SX_JSA_QUERY,
     GID_GEOGRAPHY_LOOKUP,
     GEOGRAPHY_GID_LOOKUP,
     CON_REGION_LOOKUP,

@@ -3,7 +3,6 @@
 \docType{package}
 \name{clbenefits}
 \alias{clbenefits}
-\alias{clbenefits-package}
 \title{clbenefits: Download and process a range of benefits data}
 \description{
 clbenefits: Download and process a range of benefits data

@@ -1,1 +1,0 @@
-https://www.nomisweb.co.uk/api/v01/dataset/NM_77_1.jsonstat.json?geography=2092957698&date=latest&sex=7&item=1&age=0&partner=0&children=0&youngest=0&measures=20100

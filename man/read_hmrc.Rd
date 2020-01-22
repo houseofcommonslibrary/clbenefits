@@ -15,6 +15,6 @@ A list of the results sets as dataframes.
 }
 \description{
 \code{read_hmrc} reads all the hmrc data on tax credits stored in the
-archive of csvs in the input directory and returns the data as a single
+repository of csvs in the input directory and returns the data as a single
 dataframe.
 }

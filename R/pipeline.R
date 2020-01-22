@@ -1,52 +1,10 @@
 ### Functions for running and managing the pipeline
 
-# Constants -------------------------------------------------------------------
-
-PIPELINE_DIR <- "pipeline"
-
-CONFIG_FILE <- file.path(PIPELINE_DIR, "config.json")
-CONFIG_NAME_SX_KEY = "api-key-sx"
-CONFIG_NAME_NM_KEY = "api-key-nm"
-
-INPUT_DIR <- file.path(PIPELINE_DIR, "input")
-SX_INPUT_DIR <- file.path(INPUT_DIR, "statxplore")
-NM_INPUT_DIR <- file.path(INPUT_DIR, "nomis")
-HMRC_CSV_INPUT_DIR <- file.path(INPUT_DIR, "hmrc", "csv")
-HMRC_EXCEL_INPUT_DIR <- file.path(INPUT_DIR, "hmrc", "excel")
-
-OUTPUT_DIR <- file.path(PIPELINE_DIR, "output")
-SX_OUTPUT_DIR <- file.path(OUTPUT_DIR,  "statxplore")
-NM_OUTPUT_DIR <- file.path(OUTPUT_DIR, "nomis")
-HMRC_OUTPUT_DIR <- file.path(OUTPUT_DIR, "hmrc")
-
-ARCHIVE_DIR <- file.path(PIPELINE_DIR, "archive")
-SX_ARCHIVE_DIR <- file.path(ARCHIVE_DIR,  "statxplore")
-NM_ARCHIVE_DIR <- file.path(ARCHIVE_DIR, "nomis")
-HMRC_ARCHIVE_DIR <- file.path(ARCHIVE_DIR, "hmrc")
-
-MASTER_START_DATE <- as.Date("2015-08-01", origin = lubridate::origin)
-
-LEGACY_BENEFIT_TYPES <- c(
-    "hb_total" = "housing",
-    "hmrc_wc_total" = "children",
-    "esa" = "incapacity",
-    "jsa" = "unemployment",
-    "legacy_total" = "total")
-
-UC_BENEFIT_TYPES <- c(
-    "uch_housing" = "housing",
-    "uch_child" = "children",
-    "uch_capability" = "incapacity",
-    "ucp_search_work" = "unemployment",
-    "uch_total" = "total")
-
 # Config ----------------------------------------------------------------------
 
 #' Load the config file
 #'
-#' \code{load_config} loads the config file from the pipeline directory. The
-#' config file is a json file specifying the api keys for Stat-Xplore and
-#' Nomis.
+#' \code{load_config} loads the config file from the pipeline directory.
 #'
 #' @export
 
@@ -59,12 +17,7 @@ load_config <- function() {
         stop("No Stat-Xplore API key provided in key configuration file")
     }
 
-    if (! CONFIG_NAME_NM_KEY %in% names(config)) {
-        stop("No Nomis API key provided in key configuration file")
-    }
-
     set_sx_api_key(config[[CONFIG_NAME_SX_KEY]])
-    set_nm_api_key(config[[CONFIG_NAME_NM_KEY]])
 }
 
 # Report ----------------------------------------------------------------------
@@ -86,8 +39,8 @@ report <- function(msg) cat(stringr::str_glue("{msg}\n\n"))
 fetch_data <- function(verbose = TRUE) {
 
     sx <- fetch_sx(verbose)
-    nm <- fetch_nm(verbose)
     hmrc <- read_hmrc(verbose)
+    jsa <- merge_jsa(sx$jsa, verbose)
 
     report("Writing Stat-Xplore data")
     purrr::map(names(sx), function(name) {
@@ -95,15 +48,13 @@ fetch_data <- function(verbose = TRUE) {
         readr::write_csv(sx[[name]], filename)
     })
 
-    report("Writing Nomis data")
-    purrr::map(names(nm), function(name) {
-        filename <- file.path(NM_OUTPUT_DIR, stringr::str_glue("{name}.csv"))
-        readr::write_csv(nm[[name]], filename)
-    })
-
     report("Writing HMRC data")
     filename <- file.path(HMRC_OUTPUT_DIR, "hmrc.csv")
     readr::write_csv(hmrc, filename)
+
+    report("Writing JSA data")
+    filename <- file.path(JSA_OUTPUT_DIR, "jsa.csv")
+    readr::write_csv(jsa, filename)
 
     list(
         uch = sx$uch,
@@ -111,7 +62,7 @@ fetch_data <- function(verbose = TRUE) {
         hb = sx$hb,
         esa = sx$esa,
         is = sx$is,
-        jsa = nm$jsa,
+        jsa = jsa,
         hmrc = hmrc)
 }
 
@@ -664,7 +615,6 @@ create_powerbi <- function(master) {
             .data$benefit_type)
 }
 
-
 #' Add additional columns of labels to the Power BI table
 #'
 #' @param powerbi The table of core data structured for Power BI.
@@ -730,7 +680,6 @@ add_powerbi_labels <- function(powerbi) {
         "constituency" = 1,
         "region" = 2,
         "country" = 3))
-
 
     powerbi$row_number <- as.integer(purrr::pmap_chr(
         list(powerbi$benefit_type, powerbi$area_type),

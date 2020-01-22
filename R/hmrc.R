@@ -1,13 +1,5 @@
 ### Functions for downloading and processing data from hmrc on gov.uk
 
-# Constants -------------------------------------------------------------------
-
-HMRC_TC_URL <- stringr::str_c(
-    "https://www.gov.uk/government/statistics/child-and-working-tax-credits-",
-    "statistics-provisional-awards-geographical-analyses-december-2013")
-
-HMRC_TC_FILENAME <- "tax-credits"
-
 # Parse date string for filename ----------------------------------------------
 
 parse_hmrc_date_str <- function(date_str) {
@@ -177,12 +169,12 @@ read_hmrc_csv <- function(csvname) {
             hmrc_total_range = readr::col_double()))
 }
 
-# Read in all hmrc data -------------------------------------------------------
+# Read all hmrc data ----------------------------------------------------------
 
 #' Read all hmrc data on tax credits and return it as a single dataframe
 #'
 #' \code{read_hmrc} reads all the hmrc data on tax credits stored in the
-#' archive of csvs in the input directory and returns the data as a single
+#' repository of csvs in the input directory and returns the data as a single
 #' dataframe.
 #'
 #' @param verbose A boolean indicating whether the progress of the function

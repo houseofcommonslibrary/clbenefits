@@ -1,10 +1,5 @@
 ### Functions for downloading and processing data from Stat-Xplore
 
-# Constants -------------------------------------------------------------------
-
-SX_DATE_ID_TOKEN <- "<date_id>"
-SX_START_DATE <- as.Date("2015-08-01", origin = lubridate::origin)
-
 # Generic function to fetch Stat-Xplore tables --------------------------------
 
 fetch_sx_table <- function(query, filename = NULL, custom = NULL, retry = 10) {
@@ -62,6 +57,11 @@ parse_sx_date_is <- function(quarters) {
     lubridate::dmy(quarters)
 }
 
+parse_sx_date_jsa <- function(quarters) {
+    quarters <- stringr::str_glue("1-{quarters}")
+    lubridate::dmy(quarters)
+}
+
 # Fetch dates for each dataset ------------------------------------------------
 
 fetch_sx_dates <- function(query, date_func) {
@@ -104,6 +104,10 @@ fetch_sx_dates_esa_2 <- function() {
 
 fetch_sx_dates_is <- function() {
     fetch_sx_dates(SX_IS_DATES_QUERY, parse_sx_date_is)
+}
+
+fetch_sx_dates_jsa <- function() {
+    fetch_sx_dates(SX_JSA_DATES_QUERY, parse_sx_date_jsa)
 }
 
 # Fetch data for a given date for each dataset --------------------------------
@@ -321,6 +325,31 @@ fetch_sx_is_in <- function(date_id) {
     is
 }
 
+fetch_sx_jsa_in <- function(date_id) {
+
+    query <- stringr::str_replace(SX_JSA_QUERY, SX_DATE_ID_TOKEN, date_id)
+    custom <- list("Grouped Amount of Benefit" = c("Receiving payment"))
+
+    results <- query %>%
+        fetch_sx_table(custom = custom)  %>%
+        statxplorer::add_codes_for_field(
+            field = "Westminster Parliamentary Constituencies",
+            colname = "pconid")
+
+    jsa <- results$df[[1]] %>%
+        dplyr::select(.data$pconid, dplyr::everything())
+
+    colnames(jsa) <- c(
+        "gid",
+        "geography",
+        "amount",
+        "date",
+        "jsa")
+
+    jsa$date <- parse_sx_date_jsa(jsa$date)
+    jsa
+}
+
 # Fetch data for all dates for each dataset -----------------------------------
 
 fetch_sx_dataset <- function(date_func, dataset_func, verbose = TRUE) {
@@ -359,6 +388,10 @@ fetch_sx_esa <- function(verbose = TRUE) {
 
 fetch_sx_is <- function(verbose = TRUE) {
     fetch_sx_dataset(fetch_sx_dates_is, fetch_sx_is_in, verbose)
+}
+
+fetch_sx_jsa <- function(verbose = TRUE) {
+    fetch_sx_dataset(fetch_sx_dates_jsa, fetch_sx_jsa_in, verbose)
 }
 
 
@@ -421,12 +454,20 @@ fetch_sx <- function(verbose = TRUE) {
             .data$gid,
             .data$date)
 
+    if (verbose) report("Fetching Stat-Xplore data on JSA")
+    jsa <- fetch_sx_jsa(verbose) %>%
+        dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
+        dplyr::arrange(
+            .data$gid,
+            .data$date)
+
     list(
         uch = uch,
         ucp = ucp,
         hb = hb,
         esa = esa,
-        is = is)
+        is = is,
+        jsa = jsa)
 }
 
 
