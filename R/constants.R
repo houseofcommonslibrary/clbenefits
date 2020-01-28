@@ -37,6 +37,7 @@ JSA_END_DATE <- as.Date("2023-12-01", origin = lubridate::origin)
 JSA_PROPORTION_FEB19 <- 0.9071
 
 MASTER_START_DATE <- as.Date("2015-08-01", origin = lubridate::origin)
+ROLLOUT_END_DATE <- as.Date("2023-12-01", origin = lubridate::origin)
 
 LEGACY_BENEFIT_TYPES <- c(
     "hb_total" = "housing",

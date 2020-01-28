@@ -8,7 +8,7 @@ get_months_sequence <- function(start_date, end_date) {
         by = "months")
 }
 
-# Genereic interpolation functions --------------------------------------------------------------
+# Genereic interpolation functions --------------------------------------------
 
 get_months_df <- function(data, catcols, ...) {
     start_date <- min(data$date)

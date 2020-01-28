@@ -280,9 +280,16 @@ create_master <- function(idata) {
             hmrc_int =2)) %>%
         # Fill down the interpolated columns to roll forward last value
         tidyr::fill(-dplyr::ends_with("_int")) %>%
+        # Taper legacy benefits
+        taper_hb() %>%
+        taper_esa() %>%
+        taper_is() %>%
+        taper_jsa() %>%
+        taper_hmrc() %>%
         # Add column for legacy benefits total
         dplyr::mutate(
-            legacy_total = .data$hb_not_emp +
+            legacy_total =
+                .data$hb_not_emp +
                 .data$esa +
                 .data$is +
                 .data$jsa +
