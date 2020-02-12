@@ -4,6 +4,7 @@
 
 taper_benefit <- function(master, benefit_cols, int_col, taper_end_date) {
 
+    # Split the master into rows with and without interpolation status 2
     excluded <- master %>%
         dplyr::filter(.data[[int_col]] != 2)
 
@@ -11,6 +12,10 @@ taper_benefit <- function(master, benefit_cols, int_col, taper_end_date) {
         dplyr::filter(.data[[int_col]] == 2) %>%
         dplyr::arrange(.data$gid, .data$date)
 
+    # If there are no rows to interpolate return the master table unmodified
+    if (nrow(target) == 0) return(master)
+
+    # Otherwise taper the target rows for each gid
     tapered <- target %>%
         dplyr::group_by(.data$gid) %>%
         dplyr::group_modify(function(df, group) {
@@ -20,6 +25,7 @@ taper_benefit <- function(master, benefit_cols, int_col, taper_end_date) {
             taper_interval <- lubridate::interval(start_date, taper_end_date)
             taper_delta <- taper_interval / months(1)
 
+            # Taper each target column
             for (col in benefit_cols) {
                 iterator <- get_taper_iterator(taper_delta)
                 df[[col]] <- purrr::map_dbl(df[[col]], iterator)
@@ -29,6 +35,7 @@ taper_benefit <- function(master, benefit_cols, int_col, taper_end_date) {
             df
     })
 
+    # Combine the tapered and excluded rows and re-arrange
     dplyr::bind_rows(excluded, tapered) %>%
         dplyr::arrange(.data$gid, .data$date)
 }
