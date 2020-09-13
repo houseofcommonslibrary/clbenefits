@@ -2,8 +2,12 @@ Package: clbenefits
 Type: Package
 Title: Download and Process a Range of Benefits Data
 Version: 0.4.3
-Author: Oliver Hawkins
-Maintainer: Oliver Hawkins <oli@olihawkins.com>
+Authors@R: 
+    person(
+        given = "Oliver",
+        family = "Hawkins",
+        role = c("aut", "cre"),
+        email = "oli@olihawkins.com")
 Description: Download and process a range of benefits data.
 License: file LICENSE
 Encoding: UTF-8
@@ -26,6 +30,6 @@ Imports:
     tidyr,
     xml2,
     zoo
-RoxygenNote: 7.0.2
-Remotes: olihawkins/statxplorer
+RoxygenNote: 7.1.1
+Remotes: houseofcommonslibrary/statxplorer
 Depends: R (>= 2.10)

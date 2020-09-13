@@ -6,10 +6,10 @@ This package is for use only within the House of Commons Library. Please see the
 
 ## Installation
 
-Install from GitHub using devtools.
+Install from GitHub using remotes.
 
 ```r
-install.packages("devtools")
-devtools::install_github("olihawkins/clbenefits")
+install.packages("remotes")
+remotes::install_github("houseofcommonslibrary/clbenefits")
 ```
 

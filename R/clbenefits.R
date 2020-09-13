@@ -1,5 +1,9 @@
 #' clbenefits: Download and process a range of benefits data
 #'
+#' The clbenefits package implements a pipeline for dowloading and integrating
+#' a collection of data on benefits claimed within Parliamentary
+#' constituencies.
+#'
 #' @docType package
 #' @name clbenefits
 #' @importFrom magrittr %>%
