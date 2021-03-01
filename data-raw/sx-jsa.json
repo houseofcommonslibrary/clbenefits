@@ -19,5 +19,5 @@
       "total" : false
     }
   },
-  "dimensions" : [ [ "str:field:JSA:V_F_JSA:PARLC_CODE" ], [ "str:field:JSA:V_F_JSA:amtgp" ], [ "str:field:JSA:F_JSA_QTR:DATE_NAME" ] ]
+  "dimensions" : [ [ "str:field:JSA:V_F_JSA:PARLC_CODE" ], ["str:field:JSA:V_F_JSA:duration"], [ "str:field:JSA:V_F_JSA:amtgp" ], [ "str:field:JSA:F_JSA_QTR:DATE_NAME" ] ]
 }
