@@ -115,9 +115,10 @@ fetch_sx_dates_jsa <- function() {
 fetch_sx_uch_in <- function(date_id) {
 
     query <- stringr::str_replace(SX_UCH_QUERY, SX_DATE_ID_TOKEN, date_id)
+    custom <- list("Limited Capability for Work Entitlement" = c("Yes", "No", "Total"))
 
     results <- query %>%
-        fetch_sx_table()  %>%
+        fetch_sx_table(custom = custom)  %>%
         statxplorer::add_codes_for_field(
             field = "Westminster Parliamentary Constituencies",
             colname = "pconid")
@@ -410,7 +411,6 @@ fetch_sx_jsa <- function(verbose = TRUE) {
 fetch_sx <- function(verbose = TRUE) {
 
     if (verbose) report("Fetching Stat-Xplore data on UC Households")
-
     uch <- fetch_sx_uch(verbose) %>%
         dplyr::filter(.data$gid != "ZZXXXXXXX") %>%
         dplyr::arrange(

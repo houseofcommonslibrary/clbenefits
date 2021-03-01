@@ -7,7 +7,7 @@
       "total" : false
     },
     "str:field:UC_Households:V_F_UC_HOUSEHOLDS:HCLCW_ENTITLEMENT" : {
-      "map" : [ [ "str:value:UC_Households:V_F_UC_HOUSEHOLDS:HCLCW_ENTITLEMENT:C_UC_LCW_ENTITLEMENT:0" ], [ "str:value:UC_Households:V_F_UC_HOUSEHOLDS:HCLCW_ENTITLEMENT:C_UC_LCW_ENTITLEMENT:1" ] ],
+      "map" : [ [ "str:value:UC_Households:V_F_UC_HOUSEHOLDS:HCLCW_ENTITLEMENT:C_UC_LCW_ENTITLEMENT:2", "str:value:UC_Households:V_F_UC_HOUSEHOLDS:HCLCW_ENTITLEMENT:C_UC_LCW_ENTITLEMENT:3", "str:value:UC_Households:V_F_UC_HOUSEHOLDS:HCLCW_ENTITLEMENT:C_UC_LCW_ENTITLEMENT:1" ], [ "str:value:UC_Households:V_F_UC_HOUSEHOLDS:HCLCW_ENTITLEMENT:C_UC_LCW_ENTITLEMENT:0" ] ],
       "total" : true
     },
     "str:field:UC_Households:F_UC_DATE:DATE_NAME" : {
