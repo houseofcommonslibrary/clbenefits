@@ -329,7 +329,9 @@ fetch_sx_is_in <- function(date_id) {
 fetch_sx_jsa_in <- function(date_id) {
 
     query <- stringr::str_replace(SX_JSA_QUERY, SX_DATE_ID_TOKEN, date_id)
-    custom <- list("Grouped Amount of Benefit" = c("Receiving payment"))
+    custom <- list(
+        "Duration of Current Claim" = c("6 months or more"),
+        "Grouped Amount of Benefit" = c("Receiving payment"))
 
     results <- query %>%
         fetch_sx_table(custom = custom)  %>%
@@ -338,6 +340,7 @@ fetch_sx_jsa_in <- function(date_id) {
             colname = "pconid")
 
     jsa <- results$df[[1]] %>%
+        dplyr::select(-.data$`Duration of Current Claim`) %>%
         dplyr::select(.data$pconid, dplyr::everything())
 
     colnames(jsa) <- c(

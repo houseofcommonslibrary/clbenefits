@@ -54,17 +54,6 @@ merge_jsa <- function(sx_jsa, verbose = TRUE) {
         dplyr::filter(.data$date > JSA_CROSSOVER_DATE) %>%
         dplyr::select(-.data$amount)
 
-    # Calculate the number of months from Feb 2019 to the end of the rollout
-    rollout_interval <- lubridate::interval(JSA_CROSSOVER_DATE, JSA_END_DATE)
-    rollout_delta <- rollout_interval / months(1)
-
-    # For each row reduce the JSA figure to the proportion that is income based
-    sx_jsa$jsa <- purrr::map2_dbl(sx_jsa$date, sx_jsa$jsa, function(d, jsa) {
-        delta <-  lubridate::interval(d, JSA_END_DATE) / months(1)
-        proportion <- delta / rollout_delta * JSA_PROPORTION_FEB19
-        proportion * jsa
-    })
-
     dplyr::bind_rows(historic_jsa, sx_jsa) %>%
         dplyr::arrange(.data$gid, .data$date)
 }
