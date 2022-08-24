@@ -3,7 +3,7 @@
   "measures" : [ "str:count:hb_new:V_F_HB_NEW" ],
   "recodes" : {
     "str:field:hb_new:V_F_HB_NEW:EMP" : {
-      "map" : [ [ "str:value:hb_new:V_F_HB_NEW:EMP:C_EMPLOYMENT_STATUS:1" ], [ "str:value:hb_new:V_F_HB_NEW:EMP:C_EMPLOYMENT_STATUS:2" ], [ "str:value:hb_new:V_F_HB_NEW:EMP:C_EMPLOYMENT_STATUS:3" ], [ "str:value:hb_new:V_F_HB_NEW:EMP:C_EMPLOYMENT_STATUS:99" ] ],
+      "map" : [ [ "str:value:hb_new:V_F_HB_NEW:EMP:C_EMPLOYMENT_STATUS_New:1" ], [ "str:value:hb_new:V_F_HB_NEW:EMP:C_EMPLOYMENT_STATUS_New:2" ], [ "str:value:hb_new:V_F_HB_NEW:EMP:C_EMPLOYMENT_STATUS_New:99" ] ],
       "total" : true
     },
     "str:field:hb_new:F_HB_NEW_DATE:NEW_DATE_NAME" : {

@@ -1,5 +1,5 @@
 {
   "database" : "str:database:UC_Households",
   "measures" : [ "str:count:UC_Households:V_F_UC_HOUSEHOLDS" ],
-  "dimensions" : [ [ "str:field:UC_Households:F_UC_DATE:DATE_NAME" ] ]
+  "dimensions" : [ [ "str:field:UC_Households:F_UC_HH_DATE:DATE_NAME" ] ]
 }
